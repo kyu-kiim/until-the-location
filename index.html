@@ -1,14 +1,450 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.4">
-  <style type="text/css">
+  <meta charset="utf-8">
+  <title>until-the-location</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+
+    #canvas { position: fixed; top: 0; left: 0; display: block; }
+
+    #panel {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 110px;
+      background: #000;
+      border-top: 1px solid #1a1a1a;
+      z-index: 100;
+    }
+
+    #panel-label {
+      color: #2a2a2a;
+      font-size: 8px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 6px 12px 3px;
+    }
+
+    #cms-list {
+      display: flex;
+      gap: 6px;
+      padding: 4px 12px 8px;
+      overflow-x: auto;
+      height: 80px;
+      align-items: flex-start;
+      scrollbar-width: thin;
+      scrollbar-color: #222 #000;
+    }
+
+    .cms-item {
+      color: #ccc;
+      font-size: 9px;
+      letter-spacing: 0.5px;
+      padding: 5px 8px;
+      border: 1px solid #222;
+      cursor: grab;
+      white-space: nowrap;
+      user-select: none;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+    .cms-item:hover { border-color: #555; color: #fff; }
+    .cms-item .role-tag {
+      display: block;
+      color: #444;
+      font-size: 7px;
+      margin-top: 2px;
+      letter-spacing: 1px;
+    }
+
+    #drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      color: #fff;
+      font-size: 9px;
+      font-family: 'Courier New', monospace;
+      padding: 4px 8px;
+      border: 1px solid #555;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      display: none;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
+
+<canvas id="canvas"></canvas>
+<div id="panel">
+  <div id="panel-label">drag items onto canvas</div>
+  <div id="cms-list"></div>
+</div>
+<div id="drag-ghost"></div>
+
+<script>
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSy4u5g38yzruaKY4dT3KzIps8zHhBbJ_TTwKqSWLeRvkSZRrhRsii6hTZtsfcnhl79gyxdAodJ1BxW/pub?gid=2084734993&single=true&output=csv';
+const PANEL_H = 110;
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const ghost = document.getElementById('drag-ghost');
+
+let canvasRect = { left: 0, top: 0 };
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight - PANEL_H;
+  canvasRect = canvas.getBoundingClientRect();
+}
+window.addEventListener('resize', resize);
+resize();
+
+let cmsItems = [];
+let nodes = [];
+let nextOrder = 0;
+let dragState = null;
+
+function h(n) { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+function h2(x, y) { return h(x * 127.1 + y * 311.7); }
+
+const ROLE_KEYS = {
+  'avg-error':  /average|error|reduc|smooth|noise|평균|오차/i,
+  'reference':  /reference|anchor|creat|origin|기준|좌표|ref/i,
+  'natural':    /natural|organic|wave|environ|자연|환경|파동/i,
+  'artificial': /artific|digit|glitch|machine|mechan|인공|기술|방해/i,
+  'conversion': /convers|data|transform|encod|변환|데이터/i,
+};
+const ROLE_LIST = Object.keys(ROLE_KEYS);
+
+function detectRole(item, idx) {
+  const src = `${item.form||''} ${item.type||''} ${item.role||''} ${item.name||''}`;
+  for (const [role, re] of Object.entries(ROLE_KEYS)) if (re.test(src)) return role;
+  return ROLE_LIST[idx % ROLE_LIST.length];
+}
+
+function S(alpha, width) {
+  ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+  ctx.lineWidth = width;
+}
+
+function drawAvgError(n, t) {
+  const { x, y, range: r, thickness: lw, density, jitter } = n;
+  const lines = Math.max(2, Math.round(density * 6));
+  const spread = r * 0.45;
+  for (let i = 0; i < lines; i++) {
+    const yOff = ((i / (lines - 1 || 1)) - 0.5) * spread;
+    S(0.2 + (i / lines) * 0.5, lw * (0.3 + i / lines * 0.7));
+    ctx.beginPath();
+    for (let j = 0; j <= 80; j++) {
+      const px = x - r + (j / 80) * r * 2;
+      const progress = j / 80;
+      const amp = jitter * r * 0.12 * Math.pow(1 - progress, 1.6);
+      const noise = (h2(i * 100 + j, Math.floor(t * 8)) * 2 - 1) * amp
+                  + Math.sin(j * 0.4 + t * 1.5 + i) * amp * 0.4;
+      j === 0 ? ctx.moveTo(px, y + yOff + noise) : ctx.lineTo(px, y + yOff + noise);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawReference(n) {
+  const { x, y, range: r, thickness: lw, density } = n;
+  const rings = Math.max(2, Math.round(density * 4));
+  for (let i = 1; i <= rings; i++) {
+    const ri = (r / rings) * i;
+    S(0.1 + (i / rings) * 0.35, lw * 0.5);
+    ctx.strokeRect(x - ri, y - ri, ri * 2, ri * 2);
+  }
+  S(0.75, lw);
+  ctx.beginPath(); ctx.moveTo(x - r * 2.2, y); ctx.lineTo(x + r * 2.2, y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y - r * 2.2); ctx.lineTo(x, y + r * 2.2); ctx.stroke();
+  const ticks = Math.max(4, Math.round(density * 8));
+  S(0.3, lw * 0.4);
+  for (let i = -ticks; i <= ticks; i++) {
+    if (i === 0) continue;
+    const d = (i / ticks) * r * 2;
+    ctx.beginPath(); ctx.moveTo(x + d, y - 4); ctx.lineTo(x + d, y + 4); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 4, y + d); ctx.lineTo(x + 4, y + d); ctx.stroke();
+  }
+}
+
+function drawNatural(n, t) {
+  const { x, y, range: r, thickness: lw, density, jitter } = n;
+  const lines = Math.max(2, Math.round(density * 5));
+  for (let i = 0; i < lines; i++) {
+    const phase = (i / lines) * Math.PI * 2 + t * (0.2 + jitter * 0.15);
+    const freq = 0.007 + (i % 3) * 0.004;
+    const amp = r * 0.22 * (0.6 + h2(i, 0) * 0.4);
+    S(0.2 + (i % 2 === 0 ? 0.2 : 0), lw * (0.5 + h2(i, 1) * 0.6));
+    ctx.beginPath();
+    for (let j = 0; j <= 100; j++) {
+      const px = x - r + (j / 100) * r * 2;
+      const py = y + amp * Math.sin(px * freq + phase) + Math.sin(j * 0.018 + phase * 0.6) * amp * 0.28;
+      j === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawArtificial(n, t) {
+  const { x, y, range: r, thickness: lw, density, jitter } = n;
+  const rows = Math.max(2, Math.round(density * 3) + 1);
+  const segs = Math.max(5, Math.round(density * 10));
+  const clock = Math.floor(t * 2);
+  for (let row = 0; row < rows; row++) {
+    const yOff = ((row / (rows - 1 || 1)) - 0.5) * r * 0.55;
+    S(0.35 + row * 0.1, lw);
+    ctx.beginPath();
+    let px = x - r, py = y + yOff;
+    ctx.moveTo(px, py);
+    const sw = (r * 2) / segs;
+    for (let s = 0; s < segs; s++) {
+      const seed = n.order * 1000 + row * 100 + s + clock * 37;
+      const rnd = h2(seed, row);
+      if (rnd < jitter * 0.35) {
+        ctx.stroke(); ctx.beginPath();
+        py += (h2(seed + 1, row) - 0.5) * r * 0.28;
+        ctx.moveTo(px + sw, py);
+      } else if (rnd < 0.4) {
+        const sy = (h2(seed + 2, row) - 0.5) * r * 0.22;
+        ctx.lineTo(px + sw * 0.5, py); py += sy;
+        ctx.lineTo(px + sw * 0.5, py); ctx.lineTo(px + sw, py);
+      } else {
+        ctx.lineTo(px + sw, py);
+      }
+      px += sw;
+    }
+    ctx.stroke();
+  }
+}
+
+function drawConversion(n) {
+  const { x, y, range: r, thickness: lw, density } = n;
+  const s = (r * 2) / 4;
+
+  S(0.7, lw);
+  ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x - r + s, y); ctx.stroke();
+
+  const steps = Math.max(3, Math.round(density * 5));
+  S(0.6, lw);
+  ctx.beginPath();
+  let px = x - r + s, py = y;
+  ctx.moveTo(px, py);
+  for (let i = 0; i < steps; i++) {
+    const nx = px + s / steps;
+    const ny = y + (i % 2 === 0 ? 1 : -1) * r * 0.11;
+    ctx.lineTo(px + s / steps * 0.5, py);
+    ctx.lineTo(px + s / steps * 0.5, ny);
+    ctx.lineTo(nx, ny);
+    px = nx; py = ny;
+  }
+  ctx.stroke();
+
+  const pn = Math.max(2, Math.round(density * 4));
+  const sp = Math.min(7, r * 0.12 / pn * 2);
+  for (let i = 0; i < pn; i++) {
+    S(0.25 + (i / pn) * 0.4, lw * 0.7);
+    const ly = y + (i - (pn - 1) / 2) * sp * 2;
+    ctx.beginPath(); ctx.moveTo(x - r + s * 2, ly); ctx.lineTo(x - r + s * 3, ly); ctx.stroke();
+  }
+
+  const gd = Math.max(3, Math.round(density * 4));
+  const gs = s / gd, gh = r * 0.38;
+  S(0.45, lw * 0.5);
+  for (let i = 0; i <= gd; i++) {
+    const gx = x - r + s * 3 + i * gs;
+    ctx.beginPath(); ctx.moveTo(gx, y - gh); ctx.lineTo(gx, y + gh); ctx.stroke();
+  }
+  const hLines = Math.max(2, Math.round(gd * 0.6));
+  for (let i = 0; i <= hLines; i++) {
+    const gy = y - gh + (i / hLines) * gh * 2;
+    ctx.beginPath(); ctx.moveTo(x - r + s * 3, gy); ctx.lineTo(x + r, gy); ctx.stroke();
+  }
+
+  S(0.2, lw * 0.4);
+  [s, s * 2, s * 3].forEach(ox => {
+    ctx.beginPath(); ctx.moveTo(x - r + ox, y - 7); ctx.lineTo(x - r + ox, y + 7); ctx.stroke();
+  });
+}
+
+function drawLabel(n) {
+  const { x, y, range: r, title, role, order } = n;
+  ctx.textAlign = 'left';
+  ctx.font = '8px Courier New';
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.fillText(`${String(order + 1).padStart(2, '0')} ${title.slice(0, 22)}`, x - r, y + r * 0.52 + 14);
+  ctx.fillStyle = 'rgba(255,255,255,0.14)';
+  ctx.fillText(role, x - r, y + r * 0.52 + 24);
+}
+
+function drawPath() {
+  if (nodes.length < 2) return;
+  ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+  ctx.lineWidth = 0.5;
+  ctx.setLineDash([3, 9]);
+  ctx.beginPath();
+  nodes.forEach((n, i) => i === 0 ? ctx.moveTo(n.x, n.y) : ctx.lineTo(n.x, n.y));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font = '7px Courier New';
+  ctx.fillStyle = 'rgba(255,255,255,0.16)';
+  ctx.textAlign = 'center';
+  nodes.forEach(n => ctx.fillText(`${Math.round(n.x)},${Math.round(n.y)}`, n.x, n.y - n.range * 0.48 - 6));
+}
+
+const DRAW = {
+  'avg-error':  (n, t) => drawAvgError(n, t),
+  'reference':  (n)    => drawReference(n),
+  'natural':    (n, t) => drawNatural(n, t),
+  'artificial': (n, t) => drawArtificial(n, t),
+  'conversion': (n)    => drawConversion(n),
+};
+
+function render(ts) {
+  const t = ts / 1000;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawPath();
+  nodes.forEach(n => { DRAW[n.role]?.(n, t); drawLabel(n); });
+
+  if (dragState?.type === 'new' && dragState.y >= 0 && dragState.y <= canvas.height) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([2, 5]);
+    ctx.beginPath();
+    ctx.arc(dragState.x, dragState.y, 18, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+
+function hitNode(x, y) {
+  return nodes.find(n => {
+    const dx = n.x - x, dy = n.y - y;
+    const threshold = Math.max(24, n.range * 0.25);
+    return dx * dx + dy * dy < threshold * threshold;
+  });
+}
+
+document.getElementById('cms-list').addEventListener('mousedown', e => {
+  const el = e.target.closest('.cms-item');
+  if (!el) return;
+  const idx = +el.dataset.idx;
+  const item = cmsItems[idx];
+  dragState = { type: 'new', cmsItem: item, x: e.clientX - canvasRect.left, y: e.clientY - canvasRect.top };
+  ghost.textContent = item.name || 'item';
+  ghost.style.display = 'block';
+  ghost.style.left = (e.clientX + 14) + 'px';
+  ghost.style.top = (e.clientY + 14) + 'px';
+  e.preventDefault();
+});
+
+canvas.addEventListener('mousedown', e => {
+  if (dragState) return;
+  const x = e.clientX - canvasRect.left, y = e.clientY - canvasRect.top;
+  const node = hitNode(x, y);
+  if (!node) return;
+  dragState = {
+    type: 'existing', node,
+    startX: x, startY: y,
+    origRange: node.range, origThickness: node.thickness,
+    origDensity: node.density, origJitter: node.jitter,
+    lastX: x, lastY: y, lastMs: performance.now(), speed: 0
+  };
+  e.preventDefault();
+});
+
+window.addEventListener('mousemove', e => {
+  if (!dragState) return;
+
+  if (dragState.type === 'new') {
+    dragState.x = e.clientX - canvasRect.left;
+    dragState.y = e.clientY - canvasRect.top;
+    ghost.style.left = (e.clientX + 14) + 'px';
+    ghost.style.top = (e.clientY + 14) + 'px';
+  } else {
+    const x = e.clientX - canvasRect.left, y = e.clientY - canvasRect.top;
+    const now = performance.now();
+    const dt = Math.max(1, now - dragState.lastMs);
+    const vx = x - dragState.lastX, vy = y - dragState.lastY;
+    dragState.speed = Math.sqrt(vx * vx + vy * vy) / dt * 100;
+    dragState.lastX = x; dragState.lastY = y; dragState.lastMs = now;
+
+    const n = dragState.node;
+    n.x = x; n.y = y;
+
+    const totalDX = x - dragState.startX;
+    const totalDY = y - dragState.startY;
+    const dist = Math.sqrt(totalDX * totalDX + totalDY * totalDY);
+    n.range     = Math.max(30, Math.min(300, dragState.origRange     + dist  * 0.5));
+    n.thickness = Math.max(0.3, Math.min(4,  dragState.origThickness - totalDY * 0.018));
+    n.density   = Math.max(0.1, Math.min(2,  dragState.origDensity   + totalDX * 0.004));
+    n.jitter    = Math.max(0,   Math.min(1,  dragState.origJitter    + dragState.speed * 0.012));
+  }
+});
+
+window.addEventListener('mouseup', e => {
+  if (!dragState) return;
+  if (dragState.type === 'new') {
+    ghost.style.display = 'none';
+    const x = e.clientX - canvasRect.left, y = e.clientY - canvasRect.top;
+    if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
+      const item = dragState.cmsItem;
+      nodes.push({
+        id: `n${Date.now()}`,
+        title: item.name || item.text || 'item',
+        role: item._role,
+        x, y,
+        order: nextOrder++,
+        range: 80, thickness: 1, density: 0.5, jitter: 0.3,
+        angle: 0, createdAt: Date.now()
+      });
+    }
+  }
+  dragState = null;
+});
+
+function parseCsv(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = splitLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = splitLine(line);
+    const item = {};
+    headers.forEach((k, i) => { item[k.trim().toLowerCase()] = (vals[i] || '').trim(); });
+    return item;
+  }).filter(item => Object.values(item).some(v => v));
+}
+
+function splitLine(line) {
+  const cells = []; let cur = '', q = false;
+  for (const ch of line) {
+    if (ch === '"') q = !q;
+    else if (ch === ',' && !q) { cells.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  cells.push(cur);
+  return cells;
+}
+
+function buildPanel(items) {
+  const list = document.getElementById('cms-list');
+  items.forEach((item, idx) => {
+    item._role = detectRole(item, idx);
+    const el = document.createElement('div');
+    el.className = 'cms-item';
+    el.dataset.idx = idx;
+    el.innerHTML = `${(item.name || 'item').slice(0, 28)}<span class="role-tag">${item._role}</span>`;
+    list.appendChild(el);
+  });
+}
+
+fetch(CSV_URL)
+  .then(r => r.text())
+  .then(text => { cmsItems = parseCsv(text); buildPanel(cmsItems); })
+  .catch(() => {});
+</script>
 </body>
 </html>
