@@ -16,9 +16,7 @@
       color: #222; font-size: 8px; letter-spacing: 3px;
       text-transform: uppercase; padding: 6px 12px 3px;
     }
-    #cms-list {
-      overflow: hidden; height: 80px; display: flex; align-items: flex-start;
-    }
+    #cms-list { overflow: hidden; height: 80px; display: flex; align-items: flex-start; }
     #cms-track {
       display: inline-flex; gap: 6px; padding: 4px 12px 8px;
       animation: ticker 28s linear infinite;
@@ -51,7 +49,7 @@
 <body>
 <canvas id="canvas"></canvas>
 <div id="panel">
-  <div id="panel-label">drag → direction sets axis — drag band to expand</div>
+  <div id="panel-label">drag direction sets axis — drag band to expand</div>
   <div id="cms-list"><div id="cms-track"></div></div>
 </div>
 <div id="drag-ghost"></div>
@@ -98,140 +96,129 @@ function S(alpha, w) {
   ctx.lineWidth = Math.max(0.2, w);
 }
 
-// All draw functions use (b, t, len) where len = span length (width or height)
-// b.y = center on the perpendicular axis (always 0 for vertical after ctx rotation)
-
+// ─── avg-error: parallel horizontal lines + vertical scan sweep ───────────
 function drawAvgError(b, t, len) {
-  const { y, height: H, density, jitter, order, pathPhase = 0 } = b;
+  const { y, height: H, density, order } = b;
   const W = len;
   if (H < 2) { S(1, 1); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); return; }
-  const count = Math.max(1, Math.round(H * density * 0.14 + 1));
+  const count = Math.max(2, Math.round(H * density * 0.14 + 2));
   for (let i = 0; i < count; i++) {
-    const ly = count === 1 ? y : y - H/2 + (i / (count-1)) * H;
-    S(0.45 + h2(i, order) * 0.55, Math.max(0.3, H / count * 0.55));
-    ctx.beginPath();
-    for (let j = 0; j <= 400; j++) {
-      const px = j / 400 * W;
-      const prog = j / 400;
-      const amp = jitter * H * 0.45 * Math.pow(1 - prog, 1.6);
-      const ny = ly + (h2(i*100+j, Math.floor(t*6))*2-1)*amp + Math.sin(j*0.28+t*1.3+i*1.9+pathPhase)*amp*0.3;
-      j === 0 ? ctx.moveTo(px, ny) : ctx.lineTo(px, ny);
-    }
-    ctx.stroke();
+    const ly = y - H/2 + (i + 0.5) / count * H;
+    S(0.12 + h2(i, order) * 0.52, i % 5 === 0 ? 0.8 : 0.3);
+    ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(W, ly); ctx.stroke();
   }
+  const scanX = (t * 55 + order * 71) % (W + 60) - 30;
+  S(0.7, 0.8);
+  ctx.beginPath(); ctx.moveTo(scanX, y - H/2); ctx.lineTo(scanX, y + H/2); ctx.stroke();
 }
 
+// ─── reference: axis + ruler tick marks, static ──────────────────────────
 function drawReference(b, t, len) {
   const { y, height: H, density } = b;
   const W = len;
-  S(1, Math.max(0.6, H * 0.055));
+  S(1, Math.max(0.8, H * 0.06));
   ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-  if (H < 3) return;
-  const gap = Math.max(6, 55 / density);
+  if (H < 4) return;
+  const gap = Math.max(8, 60 / density);
   for (let x = 0; x <= W; x += gap) {
     const major = Math.round(x / gap) % 5 === 0;
-    const th = major ? H * 0.88 : H * 0.32;
-    S(major ? 0.75 : 0.4, major ? 0.6 : 0.3);
+    S(major ? 0.85 : 0.4, major ? 0.7 : 0.3);
+    const th = major ? H * 0.9 : H * 0.35;
     ctx.beginPath(); ctx.moveTo(x, y - th/2); ctx.lineTo(x, y + th/2); ctx.stroke();
   }
-  if (H > 12) {
-    const subs = Math.max(2, Math.round(density * 5));
+  if (H > 14) {
+    const subs = Math.max(2, Math.round(density * 4));
     for (let i = 1; i < subs; i++) {
-      S(0.12, 0.25);
-      ctx.beginPath(); ctx.moveTo(0, y - H/2 + (i/subs)*H); ctx.lineTo(W, y - H/2 + (i/subs)*H); ctx.stroke();
+      S(0.1, 0.25);
+      const sy = y - H/2 + (i / subs) * H;
+      ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
     }
   }
-  S(0.35, 0.5);
-  ctx.beginPath(); ctx.moveTo(W/2, y - H/2); ctx.lineTo(W/2, y + H/2); ctx.stroke();
 }
 
+// ─── natural: diagonal lines at fixed angle, slow linear drift ───────────
+const DIAG_ANGLES = [30, 45, 60, -30, -45];
 function drawNatural(b, t, len) {
-  const { y, height: H, density, jitter, order, pathPhase = 0 } = b;
+  const { y, height: H, density, order } = b;
   const W = len;
   if (H < 2) { S(1, 1); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); return; }
-  const count = Math.max(1, Math.round(H * density * 0.11 + 1));
-  for (let i = 0; i < count; i++) {
-    const ly = count === 1 ? y : y - H/2 + (i / (count-1)) * H;
-    const phase = (i/count)*Math.PI*2 + t*(0.14 + jitter*0.09) + pathPhase;
-    const freq = 0.0025 + (i%3)*0.0012;
-    const amp = H * 0.42 * (0.5 + h2(i, order) * 0.5);
-    S(0.32 + h2(i, order+1)*0.52, Math.max(0.3, H/count*0.4));
-    ctx.beginPath();
-    for (let j = 0; j <= 400; j++) {
-      const px = j/400*W;
-      const py = ly + amp*Math.sin(px*freq+phase) + Math.sin(j*0.013+phase*0.55)*amp*0.18;
-      j === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-  }
-}
-
-function drawArtificial(b, t, len) {
-  const { y, height: H, density, jitter, order } = b;
-  const W = len;
-  if (H < 2) { S(1, 1); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); return; }
-  const count = Math.max(1, Math.round(H * density * 0.09 + 1));
-  const clock = Math.floor(t * 2);
-  for (let i = 0; i < count; i++) {
-    const ly = count === 1 ? y : y - H/2 + (i/(count-1))*H;
-    const segs = Math.max(40, Math.round(density * 80));
-    const sw = W / segs;
-    S(0.55 + h2(i, order)*0.4, Math.max(0.3, H/count*0.42));
-    ctx.beginPath();
-    let px = 0, py = ly;
-    ctx.moveTo(px, py);
-    for (let s = 0; s < segs; s++) {
-      const seed = order*500 + i*100 + s + clock*29;
-      const rnd = h2(seed, i);
-      if (rnd < jitter*0.27) {
-        ctx.stroke(); ctx.beginPath();
-        py = ly + (h2(seed+1,i)-0.5)*H*0.72;
-        ctx.moveTo(px+sw, py);
-      } else if (rnd < 0.33) {
-        const sy = (h2(seed+2,i)-0.5)*H*0.48;
-        ctx.lineTo(px+sw*0.5,py); py+=sy;
-        ctx.lineTo(px+sw*0.5,py); ctx.lineTo(px+sw,py);
-      } else ctx.lineTo(px+sw, py);
-      px += sw;
-    }
-    ctx.stroke();
-  }
-}
-
-function drawConversion(b, t, len) {
-  const { y, height: H, density } = b;
-  const W = len, s = W/4;
-  S(1, Math.max(0.6, H*0.055));
-  ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(s, y); ctx.stroke();
-  if (H < 3) return;
-  const steps = Math.max(6, Math.round(density*22));
-  S(0.82, Math.max(0.3, H*0.028));
+  const rad = DIAG_ANGLES[order % DIAG_ANGLES.length] * Math.PI / 180;
+  const tan = Math.tan(rad);
+  const spacing = Math.max(6, 28 / density) / Math.max(0.4, Math.abs(Math.sin(rad)));
+  const drift = (t * 12) % spacing;
+  const dxPerH = H / tan;
+  const startX = (tan > 0 ? -Math.abs(dxPerH) : 0) - spacing;
+  const endX = W + Math.abs(dxPerH) + spacing;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, y - H/2, W, H); ctx.clip();
+  S(0.75, 0.5);
   ctx.beginPath();
-  let px = s, py = y; ctx.moveTo(px, py);
-  for (let i = 0; i < steps; i++) {
-    const nx = px + s/steps, ny = y + (i%2===0?1:-1)*H*0.28;
-    ctx.lineTo(px+s/steps*0.5,py); ctx.lineTo(px+s/steps*0.5,ny); ctx.lineTo(nx,ny);
-    px = nx; py = ny;
+  for (let bx = startX + drift; bx < endX; bx += spacing) {
+    ctx.moveTo(bx, y + H/2);
+    ctx.lineTo(bx + dxPerH, y - H/2);
   }
   ctx.stroke();
-  const pn = Math.max(2, Math.round(Math.sqrt(H+1)*density*0.75));
-  const sp = H/(pn+1);
-  for (let i = 1; i <= pn; i++) {
-    S(0.28+(i/pn)*0.52, Math.max(0.2, H/pn*0.28));
-    ctx.beginPath(); ctx.moveTo(s*2, y-H/2+sp*i); ctx.lineTo(s*3, y-H/2+sp*i); ctx.stroke();
+  ctx.restore();
+}
+
+// ─── artificial: vertical barcode columns + scan head ────────────────────
+function drawArtificial(b, t, len) {
+  const { y, height: H, density, order } = b;
+  const W = len;
+  if (H < 2) { S(1, 1); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); return; }
+  const scanX = (t * 45 + order * 67) % W;
+  const cols = Math.max(20, Math.round(W * density * 0.07));
+  const step = W / cols;
+  for (let i = 0; i < cols; i++) {
+    const x = i * step + step / 2;
+    if (h2(i, order) < 0.28) continue;
+    const dist = Math.abs(x - scanX);
+    const glow = Math.max(0, 1 - dist / (W * 0.12));
+    const alpha = Math.max(0.1 + h2(i, order) * 0.38, glow * 0.95);
+    const lh = H * (0.3 + h2(i + 200, order) * 0.7);
+    S(alpha, Math.max(0.3, step * 0.45));
+    ctx.beginPath(); ctx.moveTo(x, y - lh/2); ctx.lineTo(x, y + lh/2); ctx.stroke();
   }
-  const gd = Math.max(6, Math.round(density*28)), gs = s/gd;
-  S(0.55, Math.max(0.2, H*0.009));
+}
+
+// ─── conversion: flat → staircase → parallel → grid ──────────────────────
+function drawConversion(b, t, len) {
+  const { y, height: H, density } = b;
+  const W = len, s = W / 4;
+  S(1, Math.max(0.8, H * 0.055));
+  ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(s, y); ctx.stroke();
+  if (H < 3) return;
+  const steps = Math.max(4, Math.round(density * 16));
+  const sw = s / steps;
+  S(0.85, Math.max(0.35, H * 0.028));
+  ctx.beginPath();
+  let px = s, py = y;
+  ctx.moveTo(px, py);
+  for (let i = 0; i < steps; i++) {
+    const ny = y + (i % 2 === 0 ? 1 : -1) * H * 0.3;
+    ctx.lineTo(px + sw, py);
+    ctx.lineTo(px + sw, ny);
+    px += sw; py = ny;
+  }
+  ctx.stroke();
+  const pn = Math.max(2, Math.round(Math.sqrt(H + 1) * density * 0.7));
+  for (let i = 0; i < pn; i++) {
+    S(0.25 + (i / pn) * 0.55, Math.max(0.2, H / pn * 0.32));
+    const ly = y - H/2 + (i + 0.5) / pn * H;
+    ctx.beginPath(); ctx.moveTo(s*2, ly); ctx.lineTo(s*3, ly); ctx.stroke();
+  }
+  const gd = Math.max(4, Math.round(density * 18));
+  S(0.45, 0.3);
   for (let i = 0; i <= gd; i++) {
-    ctx.beginPath(); ctx.moveTo(s*3+i*gs, y-H/2); ctx.lineTo(s*3+i*gs, y+H/2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(s*3 + i*(s/gd), y - H/2); ctx.lineTo(s*3 + i*(s/gd), y + H/2); ctx.stroke();
   }
-  const hl = Math.max(2, Math.round(H/5));
+  const hl = Math.max(2, Math.round(H / 8));
   for (let i = 0; i <= hl; i++) {
-    ctx.beginPath(); ctx.moveTo(s*3, y-H/2+(i/hl)*H); ctx.lineTo(W, y-H/2+(i/hl)*H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(s*3, y - H/2 + (i/hl)*H); ctx.lineTo(W, y - H/2 + (i/hl)*H); ctx.stroke();
   }
   S(0.2, 0.35);
   [s, s*2, s*3].forEach(ox => {
-    ctx.beginPath(); ctx.moveTo(ox, y-H/2-3); ctx.lineTo(ox, y+H/2+3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, y - H/2 - 2); ctx.lineTo(ox, y + H/2 + 2); ctx.stroke();
   });
 }
 
@@ -243,10 +230,8 @@ const DRAW = {
   'conversion': drawConversion,
 };
 
-// Vertical bands: rotate context so all draw functions work unchanged.
-// After translate(pos, 0) + rotate(π/2):
-//   local(lx, ly) → screen(pos - ly, lx)
-// So a horizontal line at ly=0 from lx=0..len → screen vertical line at x=pos, y=0..len ✓
+// Vertical bands: rotate so all draw functions work unchanged.
+// After translate(pos,0) + rotate(π/2): local(lx,ly) → screen(pos−ly, lx)
 function renderBand(b, t) {
   if (b.axis === 'v') {
     ctx.save();
@@ -259,10 +244,27 @@ function renderBand(b, t) {
   }
 }
 
+// Square dot (+ clearRect gap) at every h×v band intersection
+function drawIntersections() {
+  const hb = bands.filter(b => b.axis === 'h');
+  const vb = bands.filter(b => b.axis === 'v');
+  if (!hb.length || !vb.length) return;
+  hb.forEach(h => vb.forEach(v => {
+    const cx = v.pos, cy = h.pos;
+    if (cx < 0 || cx > canvas.width || cy < 0 || cy > canvas.height) return;
+    const sz = Math.max(3, Math.min(5, Math.sqrt(Math.min(h.height, v.height)) * 0.5 + 2.5));
+    const r = Math.round, c = Math.ceil;
+    ctx.clearRect(r(cx - sz/2) - 1, r(cy - sz/2) - 1, c(sz) + 2, c(sz) + 2);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(r(cx - sz/2), r(cy - sz/2), c(sz), c(sz));
+  }));
+}
+
 function render(ts) {
   const t = ts / 1000;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   bands.forEach(b => renderBand(b, t));
+  drawIntersections();
 
   if (dragState?.type === 'new' && dragState.axis) {
     S(0.3, 1);
@@ -280,11 +282,8 @@ function render(ts) {
     const b = dragState.band;
     S(0.1, 0.4);
     ctx.setLineDash([2, 5]);
-    if (b.axis === 'h') {
-      ctx.strokeRect(0, b.pos - b.height/2, canvas.width, b.height);
-    } else {
-      ctx.strokeRect(b.pos - b.height/2, 0, b.height, canvas.height);
-    }
+    if (b.axis === 'h') ctx.strokeRect(0, b.pos - b.height/2, canvas.width, b.height);
+    else ctx.strokeRect(b.pos - b.height/2, 0, b.height, canvas.height);
     ctx.setLineDash([]);
   }
   requestAnimationFrame(render);
@@ -340,11 +339,8 @@ window.addEventListener('mousemove', e => {
     }
   } else {
     const b = dragState.band;
-    if (b.axis === 'h') {
-      b.height = Math.max(1, Math.abs(e.clientY - canvasRect.top - b.pos) * 2);
-    } else {
-      b.height = Math.max(1, Math.abs(e.clientX - canvasRect.left - b.pos) * 2);
-    }
+    if (b.axis === 'h') b.height = Math.max(1, Math.abs(e.clientY - canvasRect.top - b.pos) * 2);
+    else b.height = Math.max(1, Math.abs(e.clientX - canvasRect.left - b.pos) * 2);
   }
 });
 
@@ -370,9 +366,7 @@ window.addEventListener('mouseup', e => {
         id: `b${Date.now()}`,
         title: item.name || item.text || 'item',
         role: item._role,
-        axis,
-        pos,
-        y: pos,
+        axis, pos, y: pos,
         height: 1,
         density: 0.4 + h2(nextOrder, 0) * 0.6 * (0.5 + pathMod * 0.5),
         jitter: 0.25 + h2(nextOrder, 1) * 0.35 + Math.abs(Math.sin(pathPhase)) * 0.15,
