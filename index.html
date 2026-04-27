@@ -5,110 +5,148 @@
   <title>until-the-location</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+    body { background: #e4e4e4; overflow: hidden; }
 
     #canvas {
       position: fixed; top: 0; left: 0; display: block;
-      cursor: crosshair; z-index: 2; will-change: transform;
+      z-index: 2; will-change: transform, filter; cursor: crosshair;
     }
 
+    /* CMS section: black, slides up on scroll */
     #cms-view {
       position: fixed; top: 0; left: 0; right: 0;
-      background: #000; z-index: 1; will-change: transform;
-      overflow-y: auto;
+      background: #000; z-index: 1; will-change: transform; overflow-y: auto;
     }
-    #cms-view.at-top { overflow-y: hidden; }
-    #cms-inner { padding: 40px 48px 40px; }
-    #cms-inner .cms-header {
-      color: #1e1e1e; font-size: 8px; letter-spacing: 4px;
-      text-transform: uppercase; margin-bottom: 20px;
-      padding-bottom: 12px; border-bottom: 1px solid #111;
-      display: grid; grid-template-columns: 2fr 1fr 3fr; gap: 24px;
+    #cms-view.no-scroll { overflow-y: hidden; }
+    #cms-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; min-height: 100%; position: relative; }
+    .cms-col { padding: 52px 28px 130px; border-right: 1px solid #111; position: relative; }
+    .cms-col:last-child { border-right: none; }
+    .col-code {
+      font-family: 'Courier New', monospace; font-size: 7.5px;
+      line-height: 1.55; color: #1a1a1a; white-space: pre; letter-spacing: 0.3px;
+      user-select: none; pointer-events: none;
     }
-    .cms-row {
-      display: grid; grid-template-columns: 2fr 1fr 3fr; gap: 24px;
-      border-top: 1px solid #0e0e0e; padding: 14px 0;
-      cursor: default;
+    /* Conceptual text overlay */
+    #cms-text {
+      position: absolute; top: 56px; left: 0; right: 0;
+      padding: 0 10%; z-index: 10; pointer-events: none;
     }
-    .cms-row:hover { background: #050505; }
-    .cms-row .r-name { color: #ccc; font-size: 10px; letter-spacing: 0.8px; }
-    .cms-row .r-type { color: #333; font-size: 9px; letter-spacing: 1px; }
-    .cms-row .r-text { color: #2a2a2a; font-size: 9px; line-height: 1.7; letter-spacing: 0.3px; }
+    #cms-text p {
+      font-family: 'Courier New', monospace; font-size: 10.5px;
+      line-height: 2; letter-spacing: 0.5px; color: #999; margin-bottom: 18px;
+    }
+    /* Column bottom: CMS LIST */
+    .col-foot {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      border-top: 1px solid #0f0f0f; padding: 16px 28px 20px;
+    }
+    .col-foot-label {
+      font-family: 'Courier New', monospace; font-size: 8px;
+      letter-spacing: 5px; text-transform: uppercase; color: #1e1e1e;
+      margin-bottom: 10px;
+    }
+    .col-foot-item {
+      font-family: 'Courier New', monospace; font-size: 8.5px;
+      color: #282828; padding: 4px 0; border-top: 1px solid #0d0d0d;
+      letter-spacing: 0.4px;
+    }
     #cms-back {
-      display: inline-block; margin-top: 36px;
-      color: #222; font-size: 8px; letter-spacing: 3px;
-      text-transform: uppercase; cursor: pointer; padding: 8px 0;
+      position: fixed; bottom: 28px; right: 36px;
+      font-family: 'Courier New', monospace; font-size: 8px;
+      letter-spacing: 3px; text-transform: uppercase; color: #1e1e1e;
+      cursor: pointer; z-index: 20;
     }
     #cms-back:hover { color: #555; }
 
+    /* Panel: light, matches main view */
     #panel {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      height: 110px; background: #000;
-      border-top: 1px solid #111; z-index: 300; will-change: transform, opacity;
+      position: fixed; bottom: 0; left: 0; right: 0; height: 110px;
+      background: #dcdcdc; border-top: 1px solid #c4c4c4;
+      z-index: 300; will-change: transform, opacity;
     }
     #panel-label {
-      color: #1a1a1a; font-size: 8px; letter-spacing: 3px;
-      text-transform: uppercase; padding: 6px 12px 3px;
+      font-family: 'Courier New', monospace; color: #aaa; font-size: 8px;
+      letter-spacing: 3px; text-transform: uppercase; padding: 6px 12px 3px;
     }
-    #cms-list { overflow: hidden; height: 80px; display: flex; align-items: flex-start; }
+    #cms-ticker { overflow: hidden; height: 80px; display: flex; align-items: flex-start; }
     #cms-track {
       display: inline-flex; gap: 6px; padding: 4px 12px 8px;
       animation: ticker 28s linear infinite; will-change: transform;
     }
     #cms-track.paused { animation-play-state: paused; }
-    @keyframes ticker {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
+    @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
     .cms-item {
-      color: #555; font-size: 9px; letter-spacing: 0.5px;
-      padding: 5px 8px; border: 1px solid #1a1a1a;
-      cursor: grab; white-space: nowrap; user-select: none;
-      flex-shrink: 0; display: inline-block;
+      font-family: 'Courier New', monospace; color: #888; font-size: 9px;
+      letter-spacing: 0.4px; padding: 5px 8px; border: 1px solid #ccc;
+      cursor: grab; white-space: nowrap; user-select: none; flex-shrink: 0;
     }
-    .cms-item:hover { border-color: #444; color: #ccc; }
+    .cms-item:hover { border-color: #999; color: #333; }
     #drag-ghost {
-      position: fixed; pointer-events: none; z-index: 9999;
-      color: #fff; font-size: 9px; padding: 3px 7px;
-      border: 1px solid #333; background: #000; display: none; white-space: nowrap;
+      position: fixed; pointer-events: none; z-index: 9999; display: none;
+      font-family: 'Courier New', monospace; color: #111; font-size: 9px;
+      padding: 3px 7px; border: 1px solid #999; background: #f0f0f0; white-space: nowrap;
     }
   </style>
 </head>
 <body>
+
 <canvas id="canvas"></canvas>
 
-<div id="cms-view" class="at-top">
-  <div id="cms-inner">
-    <div class="cms-header">
-      <span>name</span><span>type</span><span>description</span>
+<div id="cms-view" class="no-scroll">
+  <div id="cms-cols">
+    <div class="cms-col">
+      <div class="col-code" id="code-0"></div>
+      <div class="col-foot">
+        <div class="col-foot-label">CMS LIST</div>
+        <div id="items-0"></div>
+      </div>
     </div>
-    <div id="cms-entries"></div>
-    <div id="cms-back" onclick="scrollBack()">↑ return</div>
+    <div class="cms-col">
+      <div class="col-code" id="code-1"></div>
+      <div class="col-foot">
+        <div class="col-foot-label">CMS LIST</div>
+        <div id="items-1"></div>
+      </div>
+    </div>
+    <div class="cms-col">
+      <div class="col-code" id="code-2"></div>
+      <div class="col-foot">
+        <div class="col-foot-label">CMS LIST</div>
+        <div id="items-2"></div>
+      </div>
+    </div>
   </div>
+  <div id="cms-text">
+    <p>The position does not exist as a single point.</p>
+    <p>The coordinates we are seeing are only the results after the calculation has been completed, before which there are numerous unselected possibilities and unmeasured states.</p>
+    <p>The signal arrives. some are discarded. some are averaged. and a reference point is created. In between, the position is not determined. but gradually converges.</p>
+    <p>This work reveals the state before this convergence.</p>
+    <p>Click and select. connected lines. and repeated patterns are traces before they become positions. and each path is a residue of data that remains unreduced.</p>
+    <p>The position here is not a result, but a Process.</p>
+  </div>
+  <div id="cms-back" onclick="scrollBack()">↑ return</div>
 </div>
 
 <div id="panel">
   <div id="panel-label">scroll ↓ — drag to place in space</div>
-  <div id="cms-list"><div id="cms-track"></div></div>
+  <div id="cms-ticker"><div id="cms-track"></div></div>
 </div>
 <div id="drag-ghost"></div>
 
 <script>
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSy4u5g38yzruaKY4dT3KzIps8zHhBbJ_TTwKqSWLeRvkSZRrhRsii6hTZtsfcnhl79gyxdAodJ1BxW/pub?gid=2084734993&single=true&output=csv';
-const PANEL_H = 110;
-const FOV = 500, EYE_H = 180;
+const PANEL_H = 110, FOV = 500, EYE_H = 180;
+const BG = '#e4e4e4';
 
 const canvas  = document.getElementById('canvas');
 const ctx     = canvas.getContext('2d');
 const cmsView = document.getElementById('cms-view');
 const panel   = document.getElementById('panel');
 const ghost   = document.getElementById('drag-ghost');
-
 let W, H, HORIZON_Y, off, offCtx;
 
 function resize() {
-  W = window.innerWidth;
-  H = window.innerHeight - PANEL_H;
+  W = window.innerWidth; H = window.innerHeight - PANEL_H;
   canvas.width = W; canvas.height = H;
   cmsView.style.height = H + 'px';
   off = new OffscreenCanvas(W, H);
@@ -121,67 +159,76 @@ resize();
 let cmsItems = [], nodes = [], nextId = 0;
 let vScroll = 0, tgtScroll = 0, dragState = null;
 
-// ── Noise ──
 function h(n) { const x = Math.sin(n*127.1+311.7)*43758.5453; return x - Math.floor(x); }
-function snoise(seed, t) {
-  const i = Math.floor(t), f = t-i, s = f*f*(3-2*f);
-  return h(seed*127.1+i)*(1-s) + h(seed*127.1+i+1)*s;
-}
+function snoise(s, t) { const i=Math.floor(t),f=t-i,k=f*f*(3-2*f); return h(s*127.1+i)*(1-k)+h(s*127.1+i+1)*k; }
 
-// ── Projection ──
 function proj(wx, wy, wz) {
   if (wz < 1) return null;
   const sc = FOV/wz;
-  return { x: W/2 + wx*sc, y: HORIZON_Y + (EYE_H-wy)*sc, s: sc };
+  return { x: W/2+wx*sc, y: HORIZON_Y+(EYE_H-wy)*sc, s: sc };
 }
 function unproj(sx, sy) {
   const dy = sy - HORIZON_Y;
   if (dy < 5) return null;
   const wz = EYE_H*FOV/dy;
   if (wz > 3000 || wz < 160) return null;
-  return { wx: (sx - W/2)*wz/FOV, wz };
+  return { wx: (sx-W/2)*wz/FOV, wz };
 }
 
-// ── Drawing helpers (write to offCtx) ──
-function S(a, w) { offCtx.strokeStyle=`rgba(255,255,255,${a})`; offCtx.lineWidth=w||0.5; }
+function D(a, w) { offCtx.strokeStyle=`rgba(0,0,0,${a})`; offCtx.lineWidth=w||0.5; }
+
+function drawTitle() {
+  offCtx.save();
+  offCtx.font = 'bold 17px Courier New';
+  offCtx.fillStyle = 'rgba(0,0,0,0.58)';
+  offCtx.textAlign = 'center';
+  offCtx.textBaseline = 'top';
+  // manual letter spacing
+  const txt = 'UNTIL THE LOCATION', gap = 13;
+  const tw = txt.length * gap;
+  let x = W/2 - tw/2;
+  for (const ch of txt) { offCtx.fillText(ch, x + gap/2, 18); x += gap; }
+  offCtx.restore();
+}
 
 function drawGrid() {
-  [-600,-300,-120,-50,0,50,120,300,600].forEach(wx => {
-    const p0 = proj(wx,0,190), p1 = proj(wx,0,5000);
-    if (!p0||!p1) return;
+  // Dense depth lines (converging to horizon)
+  for (let wx = -900; wx <= 900; wx += 32) {
+    const p0 = proj(wx,0,190), p1 = proj(wx,0,6000);
+    if (!p0||!p1) continue;
     offCtx.beginPath(); offCtx.moveTo(p0.x,p0.y); offCtx.lineTo(p1.x,p1.y);
-    S(wx===0 ? 0.07 : 0.025); offCtx.stroke();
-  });
-  [200,310,460,690,1050,1600,2400].forEach(wz => {
-    const p0 = proj(-1400,0,wz), p1 = proj(1400,0,wz);
-    if (!p0||!p1) return;
+    D(wx===0 ? 0.09 : 0.022); offCtx.stroke();
+  }
+  // Dense cross-depth lines
+  for (let wz = 200; wz <= 3200; wz += 55) {
+    const p0 = proj(-2000,0,wz), p1 = proj(2000,0,wz);
+    if (!p0||!p1) continue;
     offCtx.beginPath(); offCtx.moveTo(p0.x,p0.y); offCtx.lineTo(p1.x,p1.y);
-    S(0.01 + (1-wz/2400)*0.032); offCtx.stroke();
-  });
+    D(0.012 + (1-wz/3200)*0.028); offCtx.stroke();
+  }
 }
 
 function drawRadar(t) {
-  const Z0 = 700, rot = t * 0.18;
+  const Z0=700, rot=t*0.18;
   [65,135,205,280,355].forEach((r,i) => {
-    offCtx.beginPath(); let first = true;
-    for (let j=0; j<=72; j++) {
-      const θ = j/72*Math.PI*2;
-      const p = proj(r*Math.cos(θ+rot), 0, Z0+r*Math.sin(θ+rot));
+    offCtx.beginPath(); let first=true;
+    for (let j=0;j<=72;j++) {
+      const θ=j/72*Math.PI*2;
+      const p=proj(r*Math.cos(θ+rot),0,Z0+r*Math.sin(θ+rot));
       if (!p){first=true;continue;}
-      first ? offCtx.moveTo(p.x,p.y) : offCtx.lineTo(p.x,p.y);
-      first = false;
+      first?offCtx.moveTo(p.x,p.y):offCtx.lineTo(p.x,p.y); first=false;
     }
-    S(0.035+i*0.018, 0.5); offCtx.stroke();
+    D(0.035+i*0.018, 0.5); offCtx.stroke();
   });
-  for (let i=0; i<12; i++) {
-    const a = i/12*Math.PI*2 + rot;
-    const pC = proj(0,0,Z0), pE = proj(355*Math.cos(a), 0, Z0+355*Math.sin(a));
+  for (let i=0;i<12;i++) {
+    const a=i/12*Math.PI*2+rot;
+    const pC=proj(0,0,Z0), pE=proj(355*Math.cos(a),0,Z0+355*Math.sin(a));
     if (!pC||!pE) continue;
     offCtx.beginPath(); offCtx.moveTo(pC.x,pC.y); offCtx.lineTo(pE.x,pE.y);
-    S(i===0 ? 0.32 : 0.04, i===0 ? 0.9 : 0.4); offCtx.stroke();
+    D(i===0?0.28:0.03, i===0?0.8:0.35); offCtx.stroke();
   }
-  const pC = proj(0,0,Z0);
-  if (pC) { offCtx.fillStyle='rgba(255,255,255,0.55)'; offCtx.fillRect(pC.x-1.5,pC.y-1.5,3,3); }
+  const pC=proj(0,0,Z0);
+  if (pC) { offCtx.fillStyle='rgba(0,0,0,0.35)'; offCtx.fillRect(pC.x-1.5,pC.y-1.5,3,3); }
 }
 
 function npos(n, t) {
@@ -195,184 +242,229 @@ function drawNodes(t) {
   if (!nodes.length) return;
   const pts = nodes.map(n => { const {wx,wz}=npos(n,t); return proj(wx,0,wz); });
 
-  // Path lines
+  // Path
   if (nodes.length > 1) {
-    offCtx.beginPath(); let first = true;
+    offCtx.beginPath(); let first=true;
     pts.forEach(p => { if(!p){first=true;return;} first?offCtx.moveTo(p.x,p.y):offCtx.lineTo(p.x,p.y); first=false; });
-    S(0.6, 0.65); offCtx.stroke();
+    offCtx.strokeStyle='rgba(0,0,0,0.35)'; offCtx.lineWidth=0.55; offCtx.stroke();
   }
 
-  // Markers + labels
+  // "+" cross markers
   nodes.forEach((n,i) => {
-    const p = pts[i]; if (!p) return;
-    const {wx,wz} = npos(n,t);
-    const rx = Math.round(p.x), ry = Math.round(p.y);
-
-    // Square marker
-    offCtx.strokeStyle = 'rgba(255,255,255,0.88)'; offCtx.lineWidth = 0.8;
-    offCtx.strokeRect(rx-3, ry-3, 6, 6);
-
-    // Latest node: outer ring
-    if (i === nodes.length-1) {
-      offCtx.beginPath(); offCtx.arc(p.x, p.y, 9, 0, Math.PI*2);
-      S(0.25, 0.5); offCtx.stroke();
-    }
-
-    // Coordinate label
-    offCtx.fillStyle = 'rgba(255,255,255,0.38)';
-    offCtx.font = '8px Courier New';
+    const p=pts[i]; if (!p) return;
+    const {wx,wz}=npos(n,t);
+    const sz = i===nodes.length-1 ? 7 : 5;
+    offCtx.strokeStyle='#c01818'; offCtx.lineWidth=0.9;
+    offCtx.beginPath();
+    offCtx.moveTo(p.x-sz,p.y); offCtx.lineTo(p.x+sz,p.y);
+    offCtx.moveTo(p.x,p.y-sz); offCtx.lineTo(p.x,p.y+sz);
+    offCtx.stroke();
+    offCtx.fillStyle='rgba(0,0,0,0.32)';
+    offCtx.font='8px Courier New';
     offCtx.fillText(`${wx>=0?'+':''}${Math.round(wx)}  z:${Math.round(wz)}`, p.x+10, p.y-3);
   });
 }
 
-// ── Render ──
+// Scroll → inversion curve: fast invert at sv 0.1→0.3, then slide
+function invertPct(sv) {
+  if (sv < 0.10) return 0;
+  if (sv > 0.30) return 100;
+  return Math.round((sv-0.10)/0.20*100);
+}
+function glitchAmt(sv) {
+  if (sv < 0.05 || sv > 0.75) return 0;
+  const mid = (sv-0.05)/0.70;
+  return Math.sin(mid*Math.PI); // peaks at sv≈0.4
+}
+
 function render(ts) {
-  const t = ts / 1000;
-  vScroll += (tgtScroll - vScroll) * 0.075;
-  const sv = Math.max(0, Math.min(1, vScroll));
+  const t = ts/1000;
+  vScroll += (tgtScroll-vScroll)*0.075;
+  const sv = Math.max(0,Math.min(1,vScroll));
 
-  canvas.style.transform  = `translateY(${-sv * H}px)`;
-  cmsView.style.transform = `translateY(${(1-sv) * H}px)`;
-  panel.style.transform   = `translateY(${sv * PANEL_H * 1.5}px)`;
-  panel.style.opacity     = '' + Math.max(0, 1 - sv * 4);
-  cmsView.classList.toggle('at-top', sv < 0.92);
+  canvas.style.transform  = `translateY(${-sv*H}px)`;
+  canvas.style.filter     = `invert(${invertPct(sv)}%)`;
+  cmsView.style.transform = `translateY(${(1-sv)*H}px)`;
+  panel.style.transform   = `translateY(${sv*PANEL_H*1.8}px)`;
+  panel.style.opacity     = ''+Math.max(0, 1-sv*5);
+  cmsView.classList.toggle('no-scroll', sv < 0.92);
 
-  offCtx.clearRect(0, 0, W, H);
+  // Draw scene to offscreen
+  offCtx.fillStyle = BG;
+  offCtx.fillRect(0,0,W,H);
   drawGrid();
   drawRadar(t);
   drawNodes(t);
+  drawTitle();
 
-  // Drag preview dot
-  if (dragState?.type === 'new') {
-    const wp = unproj(dragState.x, dragState.y);
+  // Drag preview cross
+  if (dragState?.type==='new') {
+    const wp=unproj(dragState.x, dragState.y);
     if (wp) {
-      offCtx.beginPath(); offCtx.arc(dragState.x, dragState.y, 4, 0, Math.PI*2);
-      S(0.35, 0.7); offCtx.stroke();
+      offCtx.strokeStyle='rgba(160,0,0,0.45)'; offCtx.lineWidth=0.8;
+      offCtx.beginPath();
+      offCtx.moveTo(dragState.x-4,dragState.y); offCtx.lineTo(dragState.x+4,dragState.y);
+      offCtx.moveTo(dragState.x,dragState.y-4); offCtx.lineTo(dragState.x,dragState.y+4);
+      offCtx.stroke();
     }
   }
 
-  // Glitch-composite to display canvas
-  ctx.clearRect(0, 0, W, H);
-  const g = Math.min(1, sv * 2.8);
-  ctx.drawImage(off, 0, 0);
-  if (g > 0.04) {
-    const n = Math.floor(g * 12) + 1;
-    for (let i = 0; i < n; i++) {
-      const seed = Math.floor(ts/45) + i*37;
-      const gy = Math.floor(h(seed) * H);
-      const gh = Math.ceil(1 + h(seed+7)*5);
-      const gx = Math.round((h(seed+2)-0.5) * 64 * g);
-      if (gx !== 0) ctx.drawImage(off, 0, gy, W, gh, gx, gy, W, gh);
+  // Glitch composite: copy scanlines with horizontal shift
+  ctx.clearRect(0,0,W,H);
+  const g = glitchAmt(sv);
+  ctx.drawImage(off,0,0);
+  if (g > 0.03) {
+    const count = Math.floor(g*14)+1;
+    for (let i=0;i<count;i++) {
+      const seed=Math.floor(ts/40)+i*41;
+      const gy=Math.floor(h(seed)*H);
+      const gh=Math.ceil(1+h(seed+9)*6);
+      const gx=Math.round((h(seed+3)-0.5)*80*g);
+      if (gx!==0) ctx.drawImage(off,0,gy,W,gh,gx,gy,W,gh);
     }
   }
-
   requestAnimationFrame(render);
 }
 requestAnimationFrame(render);
 
-// ── Scroll ──
+// Scroll control
 window.addEventListener('wheel', e => {
-  if (vScroll > 0.92 && e.deltaY > 0) return; // let cmsView scroll naturally
-  if (vScroll > 0.92 && e.deltaY < 0 && cmsView.scrollTop > 0) return;
-  tgtScroll = Math.max(0, Math.min(1, tgtScroll + e.deltaY / H));
+  if (vScroll>0.92 && e.deltaY>0) return;
+  if (vScroll>0.92 && e.deltaY<0 && cmsView.scrollTop>0) return;
+  tgtScroll = Math.max(0,Math.min(1,tgtScroll+e.deltaY/H));
   e.preventDefault();
-}, { passive: false });
+}, {passive:false});
+function scrollBack() { tgtScroll=0; cmsView.scrollTop=0; }
 
-function scrollBack() {
-  tgtScroll = 0;
-  cmsView.scrollTop = 0;
-}
+// Touch
+let ty0=0;
+window.addEventListener('touchstart',e=>{ty0=e.touches[0].clientY},{passive:true});
+window.addEventListener('touchmove',e=>{
+  if (vScroll>0.92) return;
+  tgtScroll=Math.max(0,Math.min(1,tgtScroll+(ty0-e.touches[0].clientY)/H));
+  ty0=e.touches[0].clientY; e.preventDefault();
+},{passive:false});
 
-let touchY0 = 0;
-window.addEventListener('touchstart', e => { touchY0 = e.touches[0].clientY; }, { passive: true });
-window.addEventListener('touchmove', e => {
-  if (vScroll > 0.92) return;
-  const dy = touchY0 - e.touches[0].clientY;
-  tgtScroll = Math.max(0, Math.min(1, tgtScroll + dy / H));
-  touchY0 = e.touches[0].clientY;
-  e.preventDefault();
-}, { passive: false });
-
-// ── Drag ──
-document.getElementById('cms-list').addEventListener('mousedown', e => {
-  const el = e.target.closest('.cms-item');
-  if (!el) return;
-  const item = cmsItems[+el.dataset.idx % cmsItems.length];
-  dragState = { type: 'new', cmsItem: item, x: e.clientX, y: e.clientY };
-  ghost.textContent = item.name || 'item';
-  ghost.style.display = 'block';
-  ghost.style.left = (e.clientX+14)+'px';
-  ghost.style.top  = (e.clientY+14)+'px';
+// Drag
+document.getElementById('cms-ticker').addEventListener('mousedown',e=>{
+  const el=e.target.closest('.cms-item'); if (!el) return;
+  const item=cmsItems[+el.dataset.idx%cmsItems.length];
+  dragState={type:'new',cmsItem:item,x:e.clientX,y:e.clientY};
+  ghost.textContent=item.name||'item';
+  ghost.style.display='block';
+  ghost.style.left=(e.clientX+14)+'px'; ghost.style.top=(e.clientY+14)+'px';
   e.preventDefault();
 });
-
-window.addEventListener('mousemove', e => {
+window.addEventListener('mousemove',e=>{
   if (!dragState) return;
-  dragState.x = e.clientX; dragState.y = e.clientY;
-  ghost.style.left = (e.clientX+14)+'px';
-  ghost.style.top  = (e.clientY+14)+'px';
+  dragState.x=e.clientX; dragState.y=e.clientY;
+  ghost.style.left=(e.clientX+14)+'px'; ghost.style.top=(e.clientY+14)+'px';
 });
-
-window.addEventListener('mouseup', e => {
+window.addEventListener('mouseup',e=>{
   if (!dragState) return;
-  if (dragState.type === 'new') {
-    ghost.style.display = 'none';
-    const pos = unproj(e.clientX, e.clientY);
-    if (pos) nodes.push({ id: nextId++, wx: pos.wx, wz: pos.wz, item: dragState.cmsItem });
+  if (dragState.type==='new') {
+    ghost.style.display='none';
+    const pos=unproj(e.clientX,e.clientY);
+    if (pos) nodes.push({id:nextId++,wx:pos.wx,wz:pos.wz,item:dragState.cmsItem});
   }
-  dragState = null;
+  dragState=null;
 });
 
-// ── CSV ──
-function parseCsv(text) {
-  const lines = text.trim().split(/\r?\n/);
-  const hdrs = splitLine(lines[0]);
-  return lines.slice(1).map(line => {
-    const vals = splitLine(line), item = {};
-    hdrs.forEach((k,i) => { item[k.trim().toLowerCase()] = (vals[i]||'').trim(); });
-    return item;
-  }).filter(item => Object.values(item).some(v => v));
+// CSV
+function parseCsv(t) {
+  const ls=t.trim().split(/\r?\n/), hd=splitLine(ls[0]);
+  return ls.slice(1).map(l=>{const v=splitLine(l),o={};hd.forEach((k,i)=>{o[k.trim().toLowerCase()]=(v[i]||'').trim();});return o;})
+    .filter(o=>Object.values(o).some(v=>v));
+}
+function splitLine(l) {
+  const c=[];let cur='',q=false;
+  for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur);cur='';}else cur+=ch;}
+  c.push(cur);return c;
 }
 
-function splitLine(line) {
-  const cells = []; let cur = '', q = false;
-  for (const ch of line) {
-    if (ch==='"') q=!q;
-    else if (ch===','&&!q){cells.push(cur);cur='';}
-    else cur+=ch;
-  }
-  cells.push(cur); return cells;
-}
+const TAPE=`K7    SYSTP,GMRKI-21
+C     GMRKI-2,+999999    HEADR*
+SW    LOOP1
+RT    SYSTP,GMRKI-1
+DEF   I5S5
+B     LOOP1
 
-function buildPanel(items) {
-  const track = document.getElementById('cms-track');
-  [0,1].forEach(() => items.forEach((item, idx) => {
-    const el = document.createElement('div');
-    el.className = 'cms-item'; el.dataset.idx = idx;
-    el.textContent = (item.name||item.text||'item').slice(0,28);
+      REDUNDANCY ON TAPE LCAC
+
+NLT1 H    0.199
+     HALT1
+I5S  BSS   LIBRN,F
+
+SW   GMRKI
+
+ABEL  OP  OPERANDS
+JOB   1401 AUTOCOCER-PASS 1-GENERATE SYSTEM TAPE-VERSION 3
+CTL   630 I
+EQU   0
+ORG   87
+DC    0
+FSTF  BSS    LIBRN,F
+I8D  EQU  200
+I8F  EQU  0
+I8G  EQU  0
+
+     108  1  08
+     109  1  09
+     109  1  10   XR2  000
+     110  1  10   XR3  000
+
+RETRIEVE PASS 2 FOR ASSEMBLY RUN
+SW   GMRKI1
+
+     4  0423  *  835       41
+     8  7  0407  *  000 199    41
+     8  7  0414  B  407        41
+     8  5  0418  B  521  F
+
+          IUI
+     0200
+     0091    DC  000
+     0094    DC  000
+     0096    DC  000
+     0099    DC  000
+     0105    DC  000000
+
+ABEL OP OPERANDS  SFX CT LOCN INSTRUCTION TYPE CARD
+JOB  1401 AUTOCOCER-PASS 1-GENERATE SYSTEM TAPE-VI
+CTL  630 I
+EQU  0
+ORG  87
+
+`;
+
+function buildUI(items) {
+  const track=document.getElementById('cms-track');
+  [0,1].forEach(()=>items.forEach((it,i)=>{
+    const el=document.createElement('div');
+    el.className='cms-item'; el.dataset.idx=i;
+    el.textContent=(it.name||it.text||'item').slice(0,28);
     track.appendChild(el);
   }));
-  track.addEventListener('mouseenter', () => track.classList.add('paused'));
-  track.addEventListener('mouseleave', () => track.classList.remove('paused'));
-}
+  track.addEventListener('mouseenter',()=>track.classList.add('paused'));
+  track.addEventListener('mouseleave',()=>track.classList.remove('paused'));
 
-function buildCms(items) {
-  const el = document.getElementById('cms-entries');
-  items.forEach(item => {
-    const row = document.createElement('div');
-    row.className = 'cms-row';
-    row.innerHTML =
-      `<div class="r-name">${item.name||''}</div>` +
-      `<div class="r-type">${item.type||item.role||''}</div>` +
-      `<div class="r-text">${item.text||item.description||''}</div>`;
-    el.appendChild(row);
+  const third=Math.ceil(items.length/3);
+  [0,1,2].forEach(c=>{
+    document.getElementById(`code-${c}`).textContent=TAPE.repeat(6);
+    const el=document.getElementById(`items-${c}`);
+    items.slice(c*third,(c+1)*third).forEach(it=>{
+      const d=document.createElement('div');
+      d.className='col-foot-item';
+      d.textContent=it.name||it.text||'';
+      el.appendChild(d);
+    });
   });
 }
 
 fetch(CSV_URL)
-  .then(r => r.text())
-  .then(text => { cmsItems = parseCsv(text); buildPanel(cmsItems); buildCms(cmsItems); })
-  .catch(() => {});
+  .then(r=>r.text())
+  .then(t=>{cmsItems=parseCsv(t);buildUI(cmsItems);})
+  .catch(()=>{});
 </script>
 </body>
 </html>
