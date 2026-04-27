@@ -6,21 +6,54 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
-    #canvas { position: fixed; top: 0; left: 0; display: block; cursor: crosshair; }
+
+    #canvas {
+      position: fixed; top: 0; left: 0; display: block;
+      cursor: crosshair; z-index: 2; will-change: transform;
+    }
+
+    #cms-view {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: #000; z-index: 1; will-change: transform;
+      overflow-y: auto;
+    }
+    #cms-view.at-top { overflow-y: hidden; }
+    #cms-inner { padding: 40px 48px 40px; }
+    #cms-inner .cms-header {
+      color: #1e1e1e; font-size: 8px; letter-spacing: 4px;
+      text-transform: uppercase; margin-bottom: 20px;
+      padding-bottom: 12px; border-bottom: 1px solid #111;
+      display: grid; grid-template-columns: 2fr 1fr 3fr; gap: 24px;
+    }
+    .cms-row {
+      display: grid; grid-template-columns: 2fr 1fr 3fr; gap: 24px;
+      border-top: 1px solid #0e0e0e; padding: 14px 0;
+      cursor: default;
+    }
+    .cms-row:hover { background: #050505; }
+    .cms-row .r-name { color: #ccc; font-size: 10px; letter-spacing: 0.8px; }
+    .cms-row .r-type { color: #333; font-size: 9px; letter-spacing: 1px; }
+    .cms-row .r-text { color: #2a2a2a; font-size: 9px; line-height: 1.7; letter-spacing: 0.3px; }
+    #cms-back {
+      display: inline-block; margin-top: 36px;
+      color: #222; font-size: 8px; letter-spacing: 3px;
+      text-transform: uppercase; cursor: pointer; padding: 8px 0;
+    }
+    #cms-back:hover { color: #555; }
+
     #panel {
       position: fixed; bottom: 0; left: 0; right: 0;
       height: 110px; background: #000;
-      border-top: 1px solid #111; z-index: 100;
+      border-top: 1px solid #111; z-index: 300; will-change: transform, opacity;
     }
     #panel-label {
-      color: #222; font-size: 8px; letter-spacing: 3px;
+      color: #1a1a1a; font-size: 8px; letter-spacing: 3px;
       text-transform: uppercase; padding: 6px 12px 3px;
     }
     #cms-list { overflow: hidden; height: 80px; display: flex; align-items: flex-start; }
     #cms-track {
       display: inline-flex; gap: 6px; padding: 4px 12px 8px;
-      animation: ticker 28s linear infinite;
-      will-change: transform;
+      animation: ticker 28s linear infinite; will-change: transform;
     }
     #cms-track.paused { animation-play-state: paused; }
     @keyframes ticker {
@@ -28,28 +61,34 @@
       100% { transform: translateX(-50%); }
     }
     .cms-item {
-      color: #bbb; font-size: 9px; letter-spacing: 0.5px;
-      padding: 5px 8px; border: 1px solid #1e1e1e;
+      color: #555; font-size: 9px; letter-spacing: 0.5px;
+      padding: 5px 8px; border: 1px solid #1a1a1a;
       cursor: grab; white-space: nowrap; user-select: none;
-      flex-shrink: 0; line-height: 1.4; display: inline-block;
+      flex-shrink: 0; display: inline-block;
     }
-    .cms-item:hover { border-color: #555; color: #fff; }
-    .cms-item .role-tag {
-      display: block; color: #333; font-size: 7px;
-      margin-top: 2px; letter-spacing: 1px;
-    }
+    .cms-item:hover { border-color: #444; color: #ccc; }
     #drag-ghost {
-      position: fixed; pointer-events: none;
-      color: #fff; font-size: 9px; font-family: 'Courier New', monospace;
-      padding: 3px 7px; border: 1px solid #444;
-      background: #000; z-index: 9999; display: none; white-space: nowrap;
+      position: fixed; pointer-events: none; z-index: 9999;
+      color: #fff; font-size: 9px; padding: 3px 7px;
+      border: 1px solid #333; background: #000; display: none; white-space: nowrap;
     }
   </style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
+
+<div id="cms-view" class="at-top">
+  <div id="cms-inner">
+    <div class="cms-header">
+      <span>name</span><span>type</span><span>description</span>
+    </div>
+    <div id="cms-entries"></div>
+    <div id="cms-back" onclick="scrollBack()">↑ return</div>
+  </div>
+</div>
+
 <div id="panel">
-  <div id="panel-label">drag direction sets axis — drag band to expand</div>
+  <div id="panel-label">scroll ↓ — drag to place in space</div>
   <div id="cms-list"><div id="cms-track"></div></div>
 </div>
 <div id="drag-ghost"></div>
@@ -57,334 +96,240 @@
 <script>
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSy4u5g38yzruaKY4dT3KzIps8zHhBbJ_TTwKqSWLeRvkSZRrhRsii6hTZtsfcnhl79gyxdAodJ1BxW/pub?gid=2084734993&single=true&output=csv';
 const PANEL_H = 110;
+const FOV = 500, EYE_H = 180;
 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const ghost = document.getElementById('drag-ghost');
-let canvasRect = { left: 0, top: 0 };
+const canvas  = document.getElementById('canvas');
+const ctx     = canvas.getContext('2d');
+const cmsView = document.getElementById('cms-view');
+const panel   = document.getElementById('panel');
+const ghost   = document.getElementById('drag-ghost');
+
+let W, H, HORIZON_Y, off, offCtx;
 
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight - PANEL_H;
-  canvasRect = canvas.getBoundingClientRect();
+  W = window.innerWidth;
+  H = window.innerHeight - PANEL_H;
+  canvas.width = W; canvas.height = H;
+  cmsView.style.height = H + 'px';
+  off = new OffscreenCanvas(W, H);
+  offCtx = off.getContext('2d');
+  HORIZON_Y = H * 0.38;
 }
 window.addEventListener('resize', resize);
 resize();
 
-let cmsItems = [], bands = [], nextOrder = 0, dragState = null, lastDrop = null;
+let cmsItems = [], nodes = [], nextId = 0;
+let vScroll = 0, tgtScroll = 0, dragState = null;
 
-function h(n) { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
-function h2(x, y) { return h(x * 127.1 + y * 311.7); }
-
-const ROLE_KEYS = {
-  'avg-error':  /average|error|reduc|smooth|noise|평균|오차/i,
-  'reference':  /reference|anchor|creat|origin|기준|좌표|ref/i,
-  'natural':    /natural|organic|wave|environ|자연|환경|파동/i,
-  'artificial': /artific|digit|glitch|machine|mechan|인공|기술|방해/i,
-  'conversion': /convers|data|transform|encod|변환|데이터/i,
-};
-const ROLE_LIST = Object.keys(ROLE_KEYS);
-
-function detectRole(item, idx) {
-  const src = `${item.form||''} ${item.type||''} ${item.role||''} ${item.name||''}`;
-  for (const [role, re] of Object.entries(ROLE_KEYS)) if (re.test(src)) return role;
-  return ROLE_LIST[idx % ROLE_LIST.length];
+// ── Noise ──
+function h(n) { const x = Math.sin(n*127.1+311.7)*43758.5453; return x - Math.floor(x); }
+function snoise(seed, t) {
+  const i = Math.floor(t), f = t-i, s = f*f*(3-2*f);
+  return h(seed*127.1+i)*(1-s) + h(seed*127.1+i+1)*s;
 }
 
-function S(alpha, w) {
-  ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-  ctx.lineWidth = Math.max(0.2, w);
+// ── Projection ──
+function proj(wx, wy, wz) {
+  if (wz < 1) return null;
+  const sc = FOV/wz;
+  return { x: W/2 + wx*sc, y: HORIZON_Y + (EYE_H-wy)*sc, s: sc };
+}
+function unproj(sx, sy) {
+  const dy = sy - HORIZON_Y;
+  if (dy < 5) return null;
+  const wz = EYE_H*FOV/dy;
+  if (wz > 3000 || wz < 160) return null;
+  return { wx: (sx - W/2)*wz/FOV, wz };
 }
 
-// ─── avg-error: parallel horizontal lines + vertical scan sweep ───────────
-function drawAvgError(b, t, len) {
-  const { y, height: H, density, order } = b;
-  const W = len;
-  if (H < 2) { S(1, 1); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); return; }
-  const count = Math.max(2, Math.round(H * density * 0.14 + 2));
-  for (let i = 0; i < count; i++) {
-    const ly = y - H/2 + (i + 0.5) / count * H;
-    S(0.12 + h2(i, order) * 0.52, i % 5 === 0 ? 0.8 : 0.3);
-    ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(W, ly); ctx.stroke();
-  }
-  const scanX = (t * 55 + order * 71) % (W + 60) - 30;
-  S(0.7, 0.8);
-  ctx.beginPath(); ctx.moveTo(scanX, y - H/2); ctx.lineTo(scanX, y + H/2); ctx.stroke();
-}
+// ── Drawing helpers (write to offCtx) ──
+function S(a, w) { offCtx.strokeStyle=`rgba(255,255,255,${a})`; offCtx.lineWidth=w||0.5; }
 
-// ─── reference: axis + ruler tick marks, static ──────────────────────────
-function drawReference(b, t, len) {
-  const { y, height: H, density } = b;
-  const W = len;
-  S(1, Math.max(0.8, H * 0.06));
-  ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-  if (H < 4) return;
-  const gap = Math.max(8, 60 / density);
-  for (let x = 0; x <= W; x += gap) {
-    const major = Math.round(x / gap) % 5 === 0;
-    S(major ? 0.85 : 0.4, major ? 0.7 : 0.3);
-    const th = major ? H * 0.9 : H * 0.35;
-    ctx.beginPath(); ctx.moveTo(x, y - th/2); ctx.lineTo(x, y + th/2); ctx.stroke();
-  }
-  if (H > 14) {
-    const subs = Math.max(2, Math.round(density * 4));
-    for (let i = 1; i < subs; i++) {
-      S(0.1, 0.25);
-      const sy = y - H/2 + (i / subs) * H;
-      ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
-    }
-  }
-}
-
-// ─── natural: diagonal lines at fixed angle, slow linear drift ───────────
-const DIAG_ANGLES = [30, 45, 60, -30, -45];
-function drawNatural(b, t, len) {
-  const { y, height: H, density, order } = b;
-  const W = len;
-  if (H < 2) { S(1, 1); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); return; }
-  const rad = DIAG_ANGLES[order % DIAG_ANGLES.length] * Math.PI / 180;
-  const tan = Math.tan(rad);
-  const spacing = Math.max(6, 28 / density) / Math.max(0.4, Math.abs(Math.sin(rad)));
-  const drift = (t * 12) % spacing;
-  const dxPerH = H / tan;
-  const startX = (tan > 0 ? -Math.abs(dxPerH) : 0) - spacing;
-  const endX = W + Math.abs(dxPerH) + spacing;
-  ctx.save();
-  ctx.beginPath(); ctx.rect(0, y - H/2, W, H); ctx.clip();
-  S(0.75, 0.5);
-  ctx.beginPath();
-  for (let bx = startX + drift; bx < endX; bx += spacing) {
-    ctx.moveTo(bx, y + H/2);
-    ctx.lineTo(bx + dxPerH, y - H/2);
-  }
-  ctx.stroke();
-  ctx.restore();
-}
-
-// ─── artificial: vertical barcode columns + scan head ────────────────────
-function drawArtificial(b, t, len) {
-  const { y, height: H, density, order } = b;
-  const W = len;
-  if (H < 2) { S(1, 1); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); return; }
-  const scanX = (t * 45 + order * 67) % W;
-  const cols = Math.max(20, Math.round(W * density * 0.07));
-  const step = W / cols;
-  for (let i = 0; i < cols; i++) {
-    const x = i * step + step / 2;
-    if (h2(i, order) < 0.28) continue;
-    const dist = Math.abs(x - scanX);
-    const glow = Math.max(0, 1 - dist / (W * 0.12));
-    const alpha = Math.max(0.1 + h2(i, order) * 0.38, glow * 0.95);
-    const lh = H * (0.3 + h2(i + 200, order) * 0.7);
-    S(alpha, Math.max(0.3, step * 0.45));
-    ctx.beginPath(); ctx.moveTo(x, y - lh/2); ctx.lineTo(x, y + lh/2); ctx.stroke();
-  }
-}
-
-// ─── conversion: flat → staircase → parallel → grid ──────────────────────
-function drawConversion(b, t, len) {
-  const { y, height: H, density } = b;
-  const W = len, s = W / 4;
-  S(1, Math.max(0.8, H * 0.055));
-  ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(s, y); ctx.stroke();
-  if (H < 3) return;
-  const steps = Math.max(4, Math.round(density * 16));
-  const sw = s / steps;
-  S(0.85, Math.max(0.35, H * 0.028));
-  ctx.beginPath();
-  let px = s, py = y;
-  ctx.moveTo(px, py);
-  for (let i = 0; i < steps; i++) {
-    const ny = y + (i % 2 === 0 ? 1 : -1) * H * 0.3;
-    ctx.lineTo(px + sw, py);
-    ctx.lineTo(px + sw, ny);
-    px += sw; py = ny;
-  }
-  ctx.stroke();
-  const pn = Math.max(2, Math.round(Math.sqrt(H + 1) * density * 0.7));
-  for (let i = 0; i < pn; i++) {
-    S(0.25 + (i / pn) * 0.55, Math.max(0.2, H / pn * 0.32));
-    const ly = y - H/2 + (i + 0.5) / pn * H;
-    ctx.beginPath(); ctx.moveTo(s*2, ly); ctx.lineTo(s*3, ly); ctx.stroke();
-  }
-  const gd = Math.max(4, Math.round(density * 18));
-  S(0.45, 0.3);
-  for (let i = 0; i <= gd; i++) {
-    ctx.beginPath(); ctx.moveTo(s*3 + i*(s/gd), y - H/2); ctx.lineTo(s*3 + i*(s/gd), y + H/2); ctx.stroke();
-  }
-  const hl = Math.max(2, Math.round(H / 8));
-  for (let i = 0; i <= hl; i++) {
-    ctx.beginPath(); ctx.moveTo(s*3, y - H/2 + (i/hl)*H); ctx.lineTo(W, y - H/2 + (i/hl)*H); ctx.stroke();
-  }
-  S(0.2, 0.35);
-  [s, s*2, s*3].forEach(ox => {
-    ctx.beginPath(); ctx.moveTo(ox, y - H/2 - 2); ctx.lineTo(ox, y + H/2 + 2); ctx.stroke();
+function drawGrid() {
+  [-600,-300,-120,-50,0,50,120,300,600].forEach(wx => {
+    const p0 = proj(wx,0,190), p1 = proj(wx,0,5000);
+    if (!p0||!p1) return;
+    offCtx.beginPath(); offCtx.moveTo(p0.x,p0.y); offCtx.lineTo(p1.x,p1.y);
+    S(wx===0 ? 0.07 : 0.025); offCtx.stroke();
+  });
+  [200,310,460,690,1050,1600,2400].forEach(wz => {
+    const p0 = proj(-1400,0,wz), p1 = proj(1400,0,wz);
+    if (!p0||!p1) return;
+    offCtx.beginPath(); offCtx.moveTo(p0.x,p0.y); offCtx.lineTo(p1.x,p1.y);
+    S(0.01 + (1-wz/2400)*0.032); offCtx.stroke();
   });
 }
 
-const DRAW = {
-  'avg-error':  drawAvgError,
-  'reference':  drawReference,
-  'natural':    drawNatural,
-  'artificial': drawArtificial,
-  'conversion': drawConversion,
-};
-
-// Vertical bands: rotate so all draw functions work unchanged.
-// After translate(pos,0) + rotate(π/2): local(lx,ly) → screen(pos−ly, lx)
-function renderBand(b, t) {
-  if (b.axis === 'v') {
-    ctx.save();
-    ctx.translate(b.pos, 0);
-    ctx.rotate(Math.PI / 2);
-    DRAW[b.role]?.({ ...b, y: 0 }, t, canvas.height);
-    ctx.restore();
-  } else {
-    DRAW[b.role]?.(b, t, canvas.width);
+function drawRadar(t) {
+  const Z0 = 700, rot = t * 0.18;
+  [65,135,205,280,355].forEach((r,i) => {
+    offCtx.beginPath(); let first = true;
+    for (let j=0; j<=72; j++) {
+      const θ = j/72*Math.PI*2;
+      const p = proj(r*Math.cos(θ+rot), 0, Z0+r*Math.sin(θ+rot));
+      if (!p){first=true;continue;}
+      first ? offCtx.moveTo(p.x,p.y) : offCtx.lineTo(p.x,p.y);
+      first = false;
+    }
+    S(0.035+i*0.018, 0.5); offCtx.stroke();
+  });
+  for (let i=0; i<12; i++) {
+    const a = i/12*Math.PI*2 + rot;
+    const pC = proj(0,0,Z0), pE = proj(355*Math.cos(a), 0, Z0+355*Math.sin(a));
+    if (!pC||!pE) continue;
+    offCtx.beginPath(); offCtx.moveTo(pC.x,pC.y); offCtx.lineTo(pE.x,pE.y);
+    S(i===0 ? 0.32 : 0.04, i===0 ? 0.9 : 0.4); offCtx.stroke();
   }
+  const pC = proj(0,0,Z0);
+  if (pC) { offCtx.fillStyle='rgba(255,255,255,0.55)'; offCtx.fillRect(pC.x-1.5,pC.y-1.5,3,3); }
 }
 
-// Square dot (+ clearRect gap) at every h×v band intersection
-function drawIntersections() {
-  const hb = bands.filter(b => b.axis === 'h');
-  const vb = bands.filter(b => b.axis === 'v');
-  if (!hb.length || !vb.length) return;
-  hb.forEach(h => vb.forEach(v => {
-    const cx = v.pos, cy = h.pos;
-    if (cx < 0 || cx > canvas.width || cy < 0 || cy > canvas.height) return;
-    const sz = Math.max(3, Math.min(5, Math.sqrt(Math.min(h.height, v.height)) * 0.5 + 2.5));
-    const r = Math.round, c = Math.ceil;
-    ctx.clearRect(r(cx - sz/2) - 1, r(cy - sz/2) - 1, c(sz) + 2, c(sz) + 2);
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(r(cx - sz/2), r(cy - sz/2), c(sz), c(sz));
-  }));
+function npos(n, t) {
+  return {
+    wx: n.wx + (snoise(n.id*3,   t*0.35) - 0.5) * 14,
+    wz: n.wz + (snoise(n.id*3+1, t*0.35+4) - 0.5) * 14
+  };
 }
 
+function drawNodes(t) {
+  if (!nodes.length) return;
+  const pts = nodes.map(n => { const {wx,wz}=npos(n,t); return proj(wx,0,wz); });
+
+  // Path lines
+  if (nodes.length > 1) {
+    offCtx.beginPath(); let first = true;
+    pts.forEach(p => { if(!p){first=true;return;} first?offCtx.moveTo(p.x,p.y):offCtx.lineTo(p.x,p.y); first=false; });
+    S(0.6, 0.65); offCtx.stroke();
+  }
+
+  // Markers + labels
+  nodes.forEach((n,i) => {
+    const p = pts[i]; if (!p) return;
+    const {wx,wz} = npos(n,t);
+    const rx = Math.round(p.x), ry = Math.round(p.y);
+
+    // Square marker
+    offCtx.strokeStyle = 'rgba(255,255,255,0.88)'; offCtx.lineWidth = 0.8;
+    offCtx.strokeRect(rx-3, ry-3, 6, 6);
+
+    // Latest node: outer ring
+    if (i === nodes.length-1) {
+      offCtx.beginPath(); offCtx.arc(p.x, p.y, 9, 0, Math.PI*2);
+      S(0.25, 0.5); offCtx.stroke();
+    }
+
+    // Coordinate label
+    offCtx.fillStyle = 'rgba(255,255,255,0.38)';
+    offCtx.font = '8px Courier New';
+    offCtx.fillText(`${wx>=0?'+':''}${Math.round(wx)}  z:${Math.round(wz)}`, p.x+10, p.y-3);
+  });
+}
+
+// ── Render ──
 function render(ts) {
   const t = ts / 1000;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  bands.forEach(b => renderBand(b, t));
-  drawIntersections();
+  vScroll += (tgtScroll - vScroll) * 0.075;
+  const sv = Math.max(0, Math.min(1, vScroll));
 
-  if (dragState?.type === 'new' && dragState.axis) {
-    S(0.3, 1);
-    ctx.setLineDash([3, 7]);
-    ctx.beginPath();
-    if (dragState.axis === 'h') {
-      ctx.moveTo(0, dragState.y); ctx.lineTo(canvas.width, dragState.y);
-    } else {
-      ctx.moveTo(dragState.x, 0); ctx.lineTo(dragState.x, canvas.height);
+  canvas.style.transform  = `translateY(${-sv * H}px)`;
+  cmsView.style.transform = `translateY(${(1-sv) * H}px)`;
+  panel.style.transform   = `translateY(${sv * PANEL_H * 1.5}px)`;
+  panel.style.opacity     = '' + Math.max(0, 1 - sv * 4);
+  cmsView.classList.toggle('at-top', sv < 0.92);
+
+  offCtx.clearRect(0, 0, W, H);
+  drawGrid();
+  drawRadar(t);
+  drawNodes(t);
+
+  // Drag preview dot
+  if (dragState?.type === 'new') {
+    const wp = unproj(dragState.x, dragState.y);
+    if (wp) {
+      offCtx.beginPath(); offCtx.arc(dragState.x, dragState.y, 4, 0, Math.PI*2);
+      S(0.35, 0.7); offCtx.stroke();
     }
-    ctx.stroke();
-    ctx.setLineDash([]);
   }
-  if (dragState?.type === 'expand') {
-    const b = dragState.band;
-    S(0.1, 0.4);
-    ctx.setLineDash([2, 5]);
-    if (b.axis === 'h') ctx.strokeRect(0, b.pos - b.height/2, canvas.width, b.height);
-    else ctx.strokeRect(b.pos - b.height/2, 0, b.height, canvas.height);
-    ctx.setLineDash([]);
+
+  // Glitch-composite to display canvas
+  ctx.clearRect(0, 0, W, H);
+  const g = Math.min(1, sv * 2.8);
+  ctx.drawImage(off, 0, 0);
+  if (g > 0.04) {
+    const n = Math.floor(g * 12) + 1;
+    for (let i = 0; i < n; i++) {
+      const seed = Math.floor(ts/45) + i*37;
+      const gy = Math.floor(h(seed) * H);
+      const gh = Math.ceil(1 + h(seed+7)*5);
+      const gx = Math.round((h(seed+2)-0.5) * 64 * g);
+      if (gx !== 0) ctx.drawImage(off, 0, gy, W, gh, gx, gy, W, gh);
+    }
   }
+
   requestAnimationFrame(render);
 }
 requestAnimationFrame(render);
 
-function hitBand(mx, my) {
-  return bands.find(b => b.axis === 'h'
-    ? Math.abs(my - b.pos) <= Math.max(5, b.height/2 + 4)
-    : Math.abs(mx - b.pos) <= Math.max(5, b.height/2 + 4));
+// ── Scroll ──
+window.addEventListener('wheel', e => {
+  if (vScroll > 0.92 && e.deltaY > 0) return; // let cmsView scroll naturally
+  if (vScroll > 0.92 && e.deltaY < 0 && cmsView.scrollTop > 0) return;
+  tgtScroll = Math.max(0, Math.min(1, tgtScroll + e.deltaY / H));
+  e.preventDefault();
+}, { passive: false });
+
+function scrollBack() {
+  tgtScroll = 0;
+  cmsView.scrollTop = 0;
 }
 
-canvas.addEventListener('mousemove', e => {
-  if (dragState) return;
-  const mx = e.clientX - canvasRect.left, my = e.clientY - canvasRect.top;
-  const band = hitBand(mx, my);
-  canvas.style.cursor = band ? (band.axis === 'h' ? 'ns-resize' : 'ew-resize') : 'crosshair';
-});
+let touchY0 = 0;
+window.addEventListener('touchstart', e => { touchY0 = e.touches[0].clientY; }, { passive: true });
+window.addEventListener('touchmove', e => {
+  if (vScroll > 0.92) return;
+  const dy = touchY0 - e.touches[0].clientY;
+  tgtScroll = Math.max(0, Math.min(1, tgtScroll + dy / H));
+  touchY0 = e.touches[0].clientY;
+  e.preventDefault();
+}, { passive: false });
 
+// ── Drag ──
 document.getElementById('cms-list').addEventListener('mousedown', e => {
   const el = e.target.closest('.cms-item');
   if (!el) return;
   const item = cmsItems[+el.dataset.idx % cmsItems.length];
-  dragState = { type: 'new', cmsItem: item, startX: e.clientX, startY: e.clientY,
-    x: e.clientX - canvasRect.left, y: e.clientY - canvasRect.top, axis: null };
+  dragState = { type: 'new', cmsItem: item, x: e.clientX, y: e.clientY };
   ghost.textContent = item.name || 'item';
   ghost.style.display = 'block';
-  ghost.style.left = (e.clientX + 14) + 'px';
-  ghost.style.top  = (e.clientY + 14) + 'px';
-  e.preventDefault();
-});
-
-canvas.addEventListener('mousedown', e => {
-  if (dragState) return;
-  const mx = e.clientX - canvasRect.left, my = e.clientY - canvasRect.top;
-  const band = hitBand(mx, my);
-  if (!band) return;
-  dragState = { type: 'expand', band };
+  ghost.style.left = (e.clientX+14)+'px';
+  ghost.style.top  = (e.clientY+14)+'px';
   e.preventDefault();
 });
 
 window.addEventListener('mousemove', e => {
   if (!dragState) return;
-  if (dragState.type === 'new') {
-    dragState.x = e.clientX - canvasRect.left;
-    dragState.y = e.clientY - canvasRect.top;
-    ghost.style.left = (e.clientX + 14) + 'px';
-    ghost.style.top  = (e.clientY + 14) + 'px';
-    if (!dragState.axis) {
-      const dx = Math.abs(e.clientX - dragState.startX);
-      const dy = Math.abs(e.clientY - dragState.startY);
-      if (dx > 12 || dy > 12) dragState.axis = dx > dy ? 'v' : 'h';
-    }
-  } else {
-    const b = dragState.band;
-    if (b.axis === 'h') b.height = Math.max(1, Math.abs(e.clientY - canvasRect.top - b.pos) * 2);
-    else b.height = Math.max(1, Math.abs(e.clientX - canvasRect.left - b.pos) * 2);
-  }
+  dragState.x = e.clientX; dragState.y = e.clientY;
+  ghost.style.left = (e.clientX+14)+'px';
+  ghost.style.top  = (e.clientY+14)+'px';
 });
 
 window.addEventListener('mouseup', e => {
   if (!dragState) return;
   if (dragState.type === 'new') {
     ghost.style.display = 'none';
-    const x = e.clientX - canvasRect.left;
-    const y = e.clientY - canvasRect.top;
-    const axis = dragState.axis || 'h';
-    const pos = axis === 'h' ? y : x;
-    const inCanvas = axis === 'h' ? (y >= 0 && y <= canvas.height) : (x >= 0 && x <= canvas.width);
-    if (inCanvas) {
-      const item = dragState.cmsItem;
-      let pathPhase = 0, pathMod = 0.5;
-      if (lastDrop) {
-        const ddx = x - lastDrop.x, ddy = y - lastDrop.y;
-        pathPhase = Math.atan2(ddy, ddx);
-        pathMod = Math.min(1, Math.sqrt(ddx*ddx + ddy*ddy) / 300);
-      }
-      lastDrop = { x, y };
-      bands.push({
-        id: `b${Date.now()}`,
-        title: item.name || item.text || 'item',
-        role: item._role,
-        axis, pos, y: pos,
-        height: 1,
-        density: 0.4 + h2(nextOrder, 0) * 0.6 * (0.5 + pathMod * 0.5),
-        jitter: 0.25 + h2(nextOrder, 1) * 0.35 + Math.abs(Math.sin(pathPhase)) * 0.15,
-        pathPhase,
-        order: nextOrder++,
-      });
-    }
+    const pos = unproj(e.clientX, e.clientY);
+    if (pos) nodes.push({ id: nextId++, wx: pos.wx, wz: pos.wz, item: dragState.cmsItem });
   }
   dragState = null;
 });
 
+// ── CSV ──
 function parseCsv(text) {
   const lines = text.trim().split(/\r?\n/);
-  const headers = splitLine(lines[0]);
+  const hdrs = splitLine(lines[0]);
   return lines.slice(1).map(line => {
-    const vals = splitLine(line);
-    const item = {};
-    headers.forEach((k, i) => { item[k.trim().toLowerCase()] = (vals[i]||'').trim(); });
+    const vals = splitLine(line), item = {};
+    hdrs.forEach((k,i) => { item[k.trim().toLowerCase()] = (vals[i]||'').trim(); });
     return item;
   }).filter(item => Object.values(item).some(v => v));
 }
@@ -392,33 +337,41 @@ function parseCsv(text) {
 function splitLine(line) {
   const cells = []; let cur = '', q = false;
   for (const ch of line) {
-    if (ch === '"') q = !q;
-    else if (ch === ',' && !q) { cells.push(cur); cur = ''; }
-    else cur += ch;
+    if (ch==='"') q=!q;
+    else if (ch===','&&!q){cells.push(cur);cur='';}
+    else cur+=ch;
   }
-  cells.push(cur);
-  return cells;
+  cells.push(cur); return cells;
 }
 
 function buildPanel(items) {
   const track = document.getElementById('cms-track');
-  [0, 1].forEach(() => {
-    items.forEach((item, idx) => {
-      item._role = detectRole(item, idx);
-      const el = document.createElement('div');
-      el.className = 'cms-item';
-      el.dataset.idx = idx;
-      el.innerHTML = `${(item.name||'item').slice(0,28)}<span class="role-tag">${item._role}</span>`;
-      track.appendChild(el);
-    });
-  });
+  [0,1].forEach(() => items.forEach((item, idx) => {
+    const el = document.createElement('div');
+    el.className = 'cms-item'; el.dataset.idx = idx;
+    el.textContent = (item.name||item.text||'item').slice(0,28);
+    track.appendChild(el);
+  }));
   track.addEventListener('mouseenter', () => track.classList.add('paused'));
   track.addEventListener('mouseleave', () => track.classList.remove('paused'));
 }
 
+function buildCms(items) {
+  const el = document.getElementById('cms-entries');
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'cms-row';
+    row.innerHTML =
+      `<div class="r-name">${item.name||''}</div>` +
+      `<div class="r-type">${item.type||item.role||''}</div>` +
+      `<div class="r-text">${item.text||item.description||''}</div>`;
+    el.appendChild(row);
+  });
+}
+
 fetch(CSV_URL)
   .then(r => r.text())
-  .then(text => { cmsItems = parseCsv(text); buildPanel(cmsItems); })
+  .then(text => { cmsItems = parseCsv(text); buildPanel(cmsItems); buildCms(cmsItems); })
   .catch(() => {});
 </script>
 </body>
