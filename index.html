@@ -174,8 +174,95 @@
       pointer-events: none;
     }
 
-    .name-tag:hover { color: #00ff41; }
+    .name-tag:hover { color: #00ff41; cursor: pointer; }
     .name-tag:hover::before { border-color: #00ff41; }
+
+    /* ── Detail overlay ─────────────────────────────────────── */
+    #detail-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 600;
+      background: rgba(255, 255, 255, 0.92);
+      display: flex;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+
+    #detail-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #detail-left {
+      width: 42%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+      flex-shrink: 0;
+    }
+
+    #detail-img {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    #detail-right {
+      flex: 1;
+      padding: 64px 64px 64px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+      position: relative;
+    }
+
+    .detail-name {
+      display: inline-block;
+      background: #00ff41;
+      color: #000;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(1.1rem, 2.4vw, 1.8rem);
+      font-weight: 700;
+      padding: 5px 14px;
+      align-self: flex-start;
+    }
+
+    .detail-field {
+      display: inline-block;
+      border: 1.5px solid #00ff41;
+      color: #000;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(0.85rem, 1.6vw, 1.2rem);
+      padding: 3px 12px;
+      align-self: flex-start;
+    }
+
+    #detail-text {
+      font-family: Georgia, serif;
+      font-size: clamp(0.8rem, 1.3vw, 1rem);
+      line-height: 1.8;
+      color: #222;
+      max-width: 520px;
+      margin-top: 10px;
+    }
+
+    #detail-close {
+      position: absolute;
+      bottom: 32px;
+      right: 40px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      line-height: 0;
+    }
+
+    #detail-close svg circle { transition: stroke 0.15s; }
+    #detail-close:hover svg circle { stroke: #00ff41; }
 
     /* ── Divider ────────────────────────────────────────────── */
     #divider {
@@ -355,6 +442,27 @@
 <!-- ── Divider ──────────────────────────────────────────── -->
 <div id="divider">
   <div id="divider-handle"></div>
+</div>
+
+<!-- ── Detail overlay ──────────────────────────────────── -->
+<div id="detail-overlay">
+  <div id="detail-left">
+    <img id="detail-img" src="" alt="">
+  </div>
+  <div id="detail-right">
+    <span class="detail-name" id="detail-name"></span>
+    <span class="detail-field" id="detail-type"></span>
+    <span class="detail-field" id="detail-form"></span>
+    <span class="detail-field" id="detail-role"></span>
+    <p id="detail-text"></p>
+    <button id="detail-close" aria-label="Close">
+      <svg viewBox="0 0 80 80" width="60" height="60" fill="none">
+        <circle cx="40" cy="40" r="37" stroke="#000" stroke-width="1.5"/>
+        <circle cx="40" cy="40" r="25" stroke="#000" stroke-width="1.5"/>
+        <circle cx="40" cy="40" r="11" stroke="#000" stroke-width="1.5"/>
+      </svg>
+    </button>
+  </div>
 </div>
 
 <!-- ── Chapter overlay ─────────────────────────────────── -->
@@ -572,6 +680,35 @@
   window.loadGoogleSheetCSV = loadGoogleSheetCSV;
   window.csvData = () => csvData;
 
+  // ── Detail overlay ────────────────────────────────────────
+  const detailOverlay = document.getElementById("detail-overlay");
+  const detailImg     = document.getElementById("detail-img");
+  const detailName    = document.getElementById("detail-name");
+  const detailType    = document.getElementById("detail-type");
+  const detailForm    = document.getElementById("detail-form");
+  const detailRole    = document.getElementById("detail-role");
+  const detailText    = document.getElementById("detail-text");
+
+  function driveImgUrl(shareUrl) {
+    const m = shareUrl.match(/\/d\/([^/?]+)/);
+    return m ? `https://drive.google.com/uc?export=view&id=${m[1]}` : shareUrl;
+  }
+
+  function showDetail(row) {
+    detailName.textContent = row.name  ?? "";
+    detailType.textContent = row.type  ?? "";
+    detailForm.textContent = row.form  ?? "";
+    detailRole.textContent = row.role  ?? "";
+    detailText.textContent = row.text  ?? "";
+    detailImg.src = row.img ? driveImgUrl(row.img) : "";
+    detailImg.style.display = row.img ? "block" : "none";
+    detailOverlay.classList.add("visible");
+  }
+
+  document.getElementById("detail-close").addEventListener("click", () => {
+    detailOverlay.classList.remove("visible");
+  });
+
   // ── CSV → name-cloud injection ────────────────────────────
   function injectNameClouds(data) {
     const byRole = {};
@@ -579,7 +716,7 @@
       const role = row.role?.trim();
       const name = row.name?.trim();
       if (!role || !name) return;
-      (byRole[role] = byRole[role] || []).push(name);
+      (byRole[role] = byRole[role] || []).push({ name, row });
     });
 
     chapters.forEach(ch => {
@@ -590,19 +727,19 @@
       const cloud = document.createElement("div");
       cloud.className = "name-cloud";
 
-      byRole[roleKey].forEach(name => {
+      byRole[roleKey].forEach(({ name, row }) => {
         const span = document.createElement("span");
         span.className = "name-tag";
         span.textContent = name;
         span.style.marginRight = (Math.random() * 48 + 4).toFixed(1) + "px";
 
-        // 30% 확률로 정중앙, 나머지는 ±4px / ±3px 랜덤 오프셋
         const centered = Math.random() < 0.3;
         const bx = centered ? 0 : +(Math.random() * 8 - 4).toFixed(1);
         const by = centered ? 0 : +(Math.random() * 6 - 3).toFixed(1);
         span.style.setProperty("--bx", bx + "px");
         span.style.setProperty("--by", by + "px");
 
+        span.addEventListener("click", () => showDetail(row));
         cloud.appendChild(span);
       });
 
