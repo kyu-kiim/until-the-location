@@ -142,6 +142,31 @@
       max-width: 480px;
     }
 
+    .name-cloud {
+      margin-top: 56px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      row-gap: 16px;
+      column-gap: 28px;
+    }
+
+    .name-tag {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(0.9rem, 1.6vw, 1.35rem);
+      color: #111;
+      cursor: default;
+      padding: 3px 10px;
+      border: 1.5px solid transparent;
+      transition: color 0.12s, border-color 0.12s;
+      white-space: nowrap;
+    }
+
+    .name-tag:hover {
+      color: #00ff41;
+      border-color: #00ff41;
+    }
+
     /* ── Divider ────────────────────────────────────────────── */
     #divider {
       width: 2px;
@@ -490,6 +515,85 @@
   document.getElementById("print-btn").addEventListener("click", () => {
     window.print();
   });
+
+  // ── Google Sheets CSV reader ──────────────────────────────
+  // 페이지에 반영하지 않고 데이터만 읽어 csvData 에 저장
+  // 시트 공개: 파일 → 공유 → 웹에 게시 → CSV → URL 복사
+  // 콘솔 사용: const data = await loadGoogleSheetCSV("URL")
+
+  let csvData = null;
+
+  function parseCSV(text) {
+    const rows = [];
+    let field = "", row = [], inQuote = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i], next = text[i + 1];
+      if (inQuote) {
+        if (ch === '"' && next === '"') { field += '"'; i++; }
+        else if (ch === '"') inQuote = false;
+        else field += ch;
+      } else {
+        if (ch === '"') { inQuote = true; }
+        else if (ch === ',') { row.push(field); field = ""; }
+        else if (ch === '\n' || (ch === '\r' && next === '\n')) {
+          row.push(field); rows.push(row); row = []; field = "";
+          if (ch === '\r') i++;
+        } else field += ch;
+      }
+    }
+    if (field || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy4u5g38yzruaKY4dT3KzIps8zHhBbJ_TTwKqSWLeRvkSZRrhRsii6hTZtsfcnhl79gyxdAodJ1BxW/pub?gid=2084734993&single=true&output=csv";
+
+  async function loadGoogleSheetCSV(url = SHEET_CSV_URL) {
+    const proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+    const res = await fetch(proxy);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = parseCSV(await res.text());
+    const headers = rows[0].map(h => h.trim());
+    csvData = rows.slice(1).map(row =>
+      Object.fromEntries(headers.map((h, i) => [h, (row[i] ?? "").trim()]))
+    );
+    console.log(`[CSV] ${csvData.length}행 로드 완료`, csvData);
+    return csvData;
+  }
+
+  window.loadGoogleSheetCSV = loadGoogleSheetCSV;
+  window.csvData = () => csvData;
+
+  // ── CSV → name-cloud injection ────────────────────────────
+  function injectNameClouds(data) {
+    const byRole = {};
+    data.forEach(row => {
+      const role = row.role?.trim();
+      const name = row.name?.trim();
+      if (!role || !name) return;
+      (byRole[role] = byRole[role] || []).push(name);
+    });
+
+    chapters.forEach(ch => {
+      const title = ch.querySelector("h2")?.textContent.trim().toLowerCase();
+      const roleKey = Object.keys(byRole).find(r => r.toLowerCase() === title);
+      if (!roleKey) return;
+
+      const cloud = document.createElement("div");
+      cloud.className = "name-cloud";
+
+      byRole[roleKey].forEach(name => {
+        const span = document.createElement("span");
+        span.className = "name-tag";
+        span.textContent = name;
+        span.style.marginLeft = (Math.random() * 22).toFixed(1) + "%";
+        cloud.appendChild(span);
+      });
+
+      ch.querySelector("p")?.after(cloud);
+    });
+  }
+
+  loadGoogleSheetCSV().then(injectNameClouds).catch(e => console.warn("[CSV]", e));
 </script>
 
 </body>
