@@ -244,7 +244,7 @@
       display: inline-block;
       color: #fff;
       font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(1.1rem, 5vw, 2.4rem);
+      font-size: clamp(1rem, 2.1vw, 1.8rem);
       padding: 5px 14px;
       align-self: flex-start;
       margin-left: clamp(60px, 9vw, 160px);
@@ -264,7 +264,7 @@
       display: inline-block;
       color: #000;
       font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(0.85rem, 1.6vw, 1.2rem);
+      font-size: clamp(1rem, 2.1vw, 1.8rem);
       padding: 3px 12px;
       align-self: flex-start;
     }
@@ -279,8 +279,7 @@
     }
 
     /* 계단식 오른쪽 이동 */
-    #detail-type { margin-left: clamp(130px, 35vw, 260px); }
-    #detail-role { margin-left: clamp(210px, 40vw, 400px); }
+    /* type/role margins set dynamically via JS positionCascade() */
 
     #detail-text {
       font-family: 'AffairsTest', serif;
@@ -745,6 +744,20 @@
     el.style.setProperty("--by", by + "px");
   }
 
+  const detailRight = document.getElementById("detail-right");
+
+  function positionCascade() {
+    const pl = parseInt(getComputedStyle(detailRight).paddingLeft) || 16;
+    const overlap = 28;
+
+    const nameRight = detailName.offsetLeft + detailName.offsetWidth;
+    detailType.style.marginLeft = Math.max(0, nameRight - overlap - pl) + "px";
+
+    void detailType.offsetWidth; // force reflow
+    const typeRight = detailType.offsetLeft + detailType.offsetWidth;
+    detailRole.style.marginLeft = Math.max(0, typeRight - overlap - pl) + "px";
+  }
+
   function showDetail(row) {
     detailName.textContent = row.name  ?? "";
     detailType.textContent = row.type  ?? "";
@@ -754,6 +767,7 @@
     detailImg.style.display = row.img ? "block" : "none";
 
     [detailName, detailType, detailRole].forEach(el => randOffset(el));
+    positionCascade();
 
     detailOverlay.classList.add("visible");
   }
