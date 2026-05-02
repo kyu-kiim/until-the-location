@@ -279,7 +279,7 @@
   <div id="left-content">
     <div class="chapter" id="ch-0">
       <h2>Until The Location</h2>
-      <p>The coordinates were wrong from the beginning. She had known this even before the map loaded, before the blinking cursor settled over a place that no longer existed on any official record. Distance was not the problem. The problem was the address itself — a number assigned to an empty lot, a ghost of a building.</p>
+      <p>Where do you stand now? Can your coordinates express you? Or is it simply a False abstraction? Your coordinates are the Consequences Produced by a much more complex path than you think. That doesn’t mean where you actually stand. </p>
     </div>
     <div class="chapter" id="ch-1">
       <h2>GPS?</h2>
@@ -385,11 +385,11 @@
     return dot;
   });
 
-  // Position dots evenly within the visible nav height
+  // Position dots — first/last dot sit exactly at the nav line ends (30px)
   function positionDots() {
     const total = dots.length;
     const navH  = window.innerHeight;
-    const pad   = 40; // px from top/bottom
+    const pad   = 30; // must match #nav-line top/bottom
     dots.forEach((dot, i) => {
       const pct = total === 1 ? 0.5 : i / (total - 1);
       dot.style.top = (pad + pct * (navH - pad * 2)) + "px";
@@ -433,6 +433,9 @@
 
   leftPanel.addEventListener("scroll", updateActiveDot);
   updateScrollIndicator();
+
+  // ── Show first chapter overlay on load ────────────────────
+  showOverlay(chapters[0]);
 
   // ── Draggable divider ─────────────────────────────────────
   let dragging = false;
