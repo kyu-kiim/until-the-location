@@ -226,7 +226,7 @@
 
     #detail-right {
       flex: 1;
-      padding: 48px 56px 48px 0;
+      padding: 48px 56px 48px 16px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -275,18 +275,17 @@
     }
 
     /* 계단식 오른쪽 이동 */
-    #detail-type { margin-left: clamp(32px, 4vw, 64px); }
-    #detail-form { margin-left: clamp(64px, 8vw, 128px); }
-    #detail-role { margin-left: clamp(96px, 12vw, 192px); }
+    #detail-type { margin-left: clamp(80px, 10vw, 180px); }
+    #detail-role { margin-left: clamp(140px, 17vw, 300px); }
 
     #detail-text {
       font-family: 'AffairsTest', serif;
-      font-size: clamp(0.8rem, 1.3vw, 1rem);
-      line-height: 1.8;
+      font-size: clamp(0.8rem, 1.2vw, 1rem);
+      line-height: 1.7;
       color: #222;
       max-width: 480px;
-      margin-top: 16px;
-      margin-left: clamp(96px, 12vw, 192px);
+      margin-top: 24px;
+      margin-left: clamp(110px, 14vw, 250px);
     }
 
     #detail-close {
@@ -441,7 +440,9 @@
     <div class="chapter" id="ch-0">
       <h2>Until The Location</h2>
       <p>Where do you stand now? Can your coordinates express you? Or is it simply a False abstraction? Your coordinates are the Consequences Produced by a much more complex path than you think. That doesn’t mean where you actually stand. </p>
-    </div>
+    <p>Simply put, the coordinates presented by GPS appear to be the simplest way to describe the current location. However, the coordinates are the result of omitting the actual sense of place, the reason for movement, the time of stay, the surroundings, and the path to reach it. Location is not immediately given by a single number but is determined temporarily through signal reception and loss, reference point setting, error correction, and data conversion.</p>
+    <p>How many processes do you have to go through before you become a position? How many errors and obstructions, attempts to correct them, location is like a countless repetitive battle rather than an immediate determination. You participate in the battle while being dataized and pressed flat. You are marked on the map with a single dot, with your senses excluded.</p>
+  </div>
     <div class="chapter" id="ch-1">
       <h2>GPS?</h2>
       <p>Asphalt gives way to gravel, then to dirt, then to nothing at all. The route the algorithm suggested had not accounted for the season. It had not accounted for anything, really — only the straight-line logic of point A to point B, indifferent to weather and time and the condition of the ground.</p>
@@ -491,7 +492,6 @@
   <div id="detail-right">
     <span class="detail-name" id="detail-name"></span>
     <span class="detail-field" id="detail-type"></span>
-    <span class="detail-field" id="detail-form"></span>
     <span class="detail-field" id="detail-role"></span>
     <p id="detail-text"></p>
     <button id="detail-close" aria-label="Close">
@@ -724,7 +724,6 @@
   const detailImg     = document.getElementById("detail-img");
   const detailName    = document.getElementById("detail-name");
   const detailType    = document.getElementById("detail-type");
-  const detailForm    = document.getElementById("detail-form");
   const detailRole    = document.getElementById("detail-role");
   const detailText    = document.getElementById("detail-text");
 
@@ -745,13 +744,12 @@
   function showDetail(row) {
     detailName.textContent = row.name  ?? "";
     detailType.textContent = row.type  ?? "";
-    detailForm.textContent = row.form  ?? "";
     detailRole.textContent = row.role  ?? "";
     detailText.textContent = row.text  ?? "";
     detailImg.src = row.img ? driveImgUrl(row.img) : "";
     detailImg.style.display = row.img ? "block" : "none";
 
-    [detailName, detailType, detailForm, detailRole].forEach(el => randOffset(el));
+    [detailName, detailType, detailRole].forEach(el => randOffset(el));
 
     detailOverlay.classList.add("visible");
   }
