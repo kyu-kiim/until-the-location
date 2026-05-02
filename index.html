@@ -7,7 +7,7 @@
   <style>
     @font-face {
       font-family: 'AffairsTest';
-      src: url('fonts/AffairsTest-Mono.otf') format('opentype');
+      src: url('fonts/AffairsTest-Regular.otf') format('opentype');
       font-weight: normal;
       font-style: normal;
     }
@@ -182,7 +182,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      border: 1.5px solid transparent;
+      border: 1.5px solid #bbb;
       transform: translate(var(--bx, 0px), var(--by, 0px));
       transition: border-color 0.12s;
       pointer-events: none;
@@ -194,7 +194,7 @@
     /* ── Detail overlay ─────────────────────────────────────── */
     #detail-overlay {
       position: fixed;
-      inset: 0;
+      inset: 5% 0;
       z-index: 600;
       background: rgba(255, 255, 255, 0.92);
       display: flex;
@@ -226,28 +226,38 @@
 
     #detail-right {
       flex: 1;
-      padding: 64px 64px 64px 0;
+      padding: 48px 56px 48px 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 14px;
+      gap: 12px;
       position: relative;
     }
 
     .detail-name {
+      position: relative;
       display: inline-block;
-      background: #00ff41;
       color: #000;
       font-family: 'NeueHaasGrot', sans-serif;
       font-size: clamp(1.1rem, 2.4vw, 1.8rem);
       font-weight: 700;
       padding: 5px 14px;
       align-self: flex-start;
+      margin-left: 0;
+    }
+
+    .detail-name::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #00ff41;
+      transform: translate(var(--bx, 0px), var(--by, 0px));
+      z-index: -1;
     }
 
     .detail-field {
+      position: relative;
       display: inline-block;
-      border: 1.5px solid #00ff41;
       color: #000;
       font-family: 'NeueHaasGrot', sans-serif;
       font-size: clamp(0.85rem, 1.6vw, 1.2rem);
@@ -255,13 +265,28 @@
       align-self: flex-start;
     }
 
+    .detail-field::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1.5px solid #00ff41;
+      transform: translate(var(--bx, 0px), var(--by, 0px));
+      pointer-events: none;
+    }
+
+    /* 계단식 오른쪽 이동 */
+    #detail-type { margin-left: clamp(32px, 4vw, 64px); }
+    #detail-form { margin-left: clamp(64px, 8vw, 128px); }
+    #detail-role { margin-left: clamp(96px, 12vw, 192px); }
+
     #detail-text {
       font-family: 'AffairsTest', serif;
       font-size: clamp(0.8rem, 1.3vw, 1rem);
       line-height: 1.8;
       color: #222;
-      max-width: 520px;
-      margin-top: 10px;
+      max-width: 480px;
+      margin-top: 16px;
+      margin-left: clamp(96px, 12vw, 192px);
     }
 
     #detail-close {
@@ -708,6 +733,13 @@
     return m ? `https://drive.google.com/uc?export=view&id=${m[1]}` : shareUrl;
   }
 
+  function randOffset(el, maxX = 6, maxY = 4) {
+    const bx = +(Math.random() * maxX * 2 - maxX).toFixed(1);
+    const by = +(Math.random() * maxY * 2 - maxY).toFixed(1);
+    el.style.setProperty("--bx", bx + "px");
+    el.style.setProperty("--by", by + "px");
+  }
+
   function showDetail(row) {
     detailName.textContent = row.name  ?? "";
     detailType.textContent = row.type  ?? "";
@@ -716,6 +748,9 @@
     detailText.textContent = row.text  ?? "";
     detailImg.src = row.img ? driveImgUrl(row.img) : "";
     detailImg.style.display = row.img ? "block" : "none";
+
+    [detailName, detailType, detailForm, detailRole].forEach(el => randOffset(el));
+
     detailOverlay.classList.add("visible");
   }
 
