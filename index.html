@@ -147,19 +147,19 @@
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
-      row-gap: 16px;
-      column-gap: 28px;
+      row-gap: 14px;
     }
 
     .name-tag {
       font-family: Arial, Helvetica, sans-serif;
-      font-size: clamp(0.9rem, 1.6vw, 1.35rem);
+      font-size: clamp(0.55rem, 1.6vw, 1.35rem);
       color: #111;
       cursor: default;
-      padding: 3px 10px;
+      padding: 2px 6px;
       border: 1.5px solid transparent;
       transition: color 0.12s, border-color 0.12s;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .name-tag:hover {
@@ -585,7 +585,7 @@
         const span = document.createElement("span");
         span.className = "name-tag";
         span.textContent = name;
-        span.style.marginLeft = (Math.random() * 22).toFixed(1) + "%";
+        span.style.marginRight = (Math.random() * 48 + 4).toFixed(1) + "px";
         cloud.appendChild(span);
       });
 
