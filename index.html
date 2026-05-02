@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Until the Location</title>
   <style>
+    @font-face {
+      font-family: 'AffairsTest';
+      src: url('fonts/AffairsTest-Mono.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'NeueHaasGrot';
+      src: url('fonts/NeueHaasGrotDisp-55Roman.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
@@ -135,7 +149,7 @@
     }
 
     .chapter p {
-      font-family: Georgia, serif;
+      font-family: 'AffairsTest', serif;
       font-size: 0.9rem;
       line-height: 1.85;
       color: #222;
@@ -153,7 +167,7 @@
 
     .name-tag {
       position: relative;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: 'NeueHaasGrot', sans-serif;
       font-size: clamp(0.55rem, 1.6vw, 1.35rem);
       color: #111;
       cursor: default;
@@ -224,7 +238,7 @@
       display: inline-block;
       background: #00ff41;
       color: #000;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: 'NeueHaasGrot', sans-serif;
       font-size: clamp(1.1rem, 2.4vw, 1.8rem);
       font-weight: 700;
       padding: 5px 14px;
@@ -235,14 +249,14 @@
       display: inline-block;
       border: 1.5px solid #00ff41;
       color: #000;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: 'NeueHaasGrot', sans-serif;
       font-size: clamp(0.85rem, 1.6vw, 1.2rem);
       padding: 3px 12px;
       align-self: flex-start;
     }
 
     #detail-text {
-      font-family: Georgia, serif;
+      font-family: 'AffairsTest', serif;
       font-size: clamp(0.8rem, 1.3vw, 1rem);
       line-height: 1.8;
       color: #222;
@@ -357,7 +371,7 @@
     }
 
     #overlay-body {
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: 'NeueHaasGrot', sans-serif;
       font-size: clamp(1.8rem, 3.6vw, 3.2rem);
       font-weight: 800;
       line-height: 1.3;
