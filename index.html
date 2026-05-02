@@ -489,6 +489,82 @@
   document.getElementById("print-btn").addEventListener("click", () => {
     window.print();
   });
+
+  // ── Google Sheets CSV loader ──────────────────────────────
+  // 사용법: loadGoogleSheetCSV("여기에_게시된_CSV_URL") 를 콘솔에서 호출
+  // 시트 공개: 파일 → 공유 → 웹에 게시 → CSV → URL 복사
+  // 컬럼 순서: A열=제목, B열=본문 (첫 행은 헤더로 건너뜀)
+
+  function parseCSV(text) {
+    const rows = [];
+    let field = "", row = [], inQuote = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i], next = text[i + 1];
+      if (inQuote) {
+        if (ch === '"' && next === '"') { field += '"'; i++; }
+        else if (ch === '"') inQuote = false;
+        else field += ch;
+      } else {
+        if (ch === '"') { inQuote = true; }
+        else if (ch === ',') { row.push(field); field = ""; }
+        else if (ch === '\n' || (ch === '\r' && next === '\n')) {
+          row.push(field); rows.push(row); row = []; field = "";
+          if (ch === '\r') i++;
+        } else field += ch;
+      }
+    }
+    if (field || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  async function loadGoogleSheetCSV("https://docs.google.com/spreadsheets/d/e/2PACX-1vSy4u5g38yzruaKY4dT3KzIps8zHhBbJ_TTwKqSWLeRvkSZRrhRsii6hTZtsfcnhl79gyxdAodJ1BxW/pubhtml") {
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const rows = parseCSV(text);
+
+    // 첫 행이 헤더인지 확인 (숫자로 시작하지 않으면 헤더로 간주)
+    const dataRows = isNaN(Number(rows[0]?.[0])) ? rows.slice(1) : rows;
+
+    const content = document.getElementById("left-content");
+    content.innerHTML = "";
+
+    dataRows.forEach((row, i) => {
+      const title = (row[0] ?? "").trim();
+      const body  = (row[1] ?? "").trim();
+      if (!title && !body) return;
+      const sec = document.createElement("div");
+      sec.className = "chapter";
+      sec.id = `ch-${i}`;
+      sec.innerHTML = `<h2>${title}</h2><p>${body}</p>`;
+      content.appendChild(sec);
+    });
+
+    // 챕터 목록 갱신 후 nav 재구성
+    const newChapters = Array.from(document.querySelectorAll(".chapter"));
+    chapterNav.querySelectorAll(".chapter-dot").forEach(d => d.remove());
+    newChapters.forEach((ch, i) => {
+      const dot = document.createElement("div");
+      dot.className = "chapter-dot" + (i === 0 ? " active" : "");
+      const label = document.createElement("span");
+      label.className = "dot-label";
+      label.textContent = ch.querySelector("h2")?.textContent ?? `Chapter ${i + 1}`;
+      dot.appendChild(label);
+      chapterNav.appendChild(dot);
+      dot.addEventListener("click", () => {
+        ch.scrollIntoView({ behavior: "smooth", block: "start" });
+        showOverlay(ch);
+      });
+    });
+    lastActiveIdx = 0;
+    positionDots();
+    updateScrollIndicator();
+    if (newChapters[0]) showOverlay(newChapters[0]);
+    console.log(`[CSV] ${newChapters.length}개 챕터 로드 완료`);
+  }
+
+  window.loadGoogleSheetCSV = loadGoogleSheetCSV;
 </script>
 
 </body>
