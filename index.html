@@ -669,13 +669,82 @@
   // ── Initialize left panel width ───────────────────────────
   leftPanel.style.width = "50vw";
 
+  // ── Right panel trail canvas ──────────────────────────────
+  const trailCanvas = document.createElement("canvas");
+  trailCanvas.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:1";
+  rightPanel.appendChild(trailCanvas);
+  const tCtx = trailCanvas.getContext("2d");
+
+  const trailPts = [];   // {x,y} as 0–1 ratios, or null = pen lift
+  let playOffset = 0;
+  let playRAF    = null;
+  let isPlaying  = false;
+
+  function resizeTrail() {
+    trailCanvas.width  = rightPanel.clientWidth;
+    trailCanvas.height = rightPanel.clientHeight;
+    redrawTrail();
+  }
+
+  function drawPath(shiftY) {
+    const w = trailCanvas.width, h = trailCanvas.height;
+    tCtx.save();
+    tCtx.beginPath(); tCtx.rect(0, 0, w, h); tCtx.clip();
+    tCtx.translate(0, shiftY);
+    tCtx.beginPath();
+    let down = false;
+    for (const pt of trailPts) {
+      if (!pt) { down = false; continue; }
+      const x = pt.x * w, y = pt.y * h;
+      if (!down) { tCtx.moveTo(x, y); down = true; }
+      else        tCtx.lineTo(x, y);
+    }
+    tCtx.strokeStyle = "#00ff41";
+    tCtx.lineWidth   = 1.5;
+    tCtx.lineCap     = "round";
+    tCtx.lineJoin    = "round";
+    tCtx.stroke();
+    tCtx.restore();
+  }
+
+  function redrawTrail() {
+    const h = trailCanvas.height;
+    tCtx.clearRect(0, 0, trailCanvas.width, h);
+    const off = playOffset % h;
+    drawPath(-off);        // main pass (shifted up)
+    drawPath(h - off);     // wrap-around pass
+  }
+
+  new ResizeObserver(resizeTrail).observe(rightPanel);
+  resizeTrail();
+
   // ── Buttons ───────────────────────────────────────────────
   document.getElementById("play-btn").addEventListener("click", () => {
-    // placeholder for play logic
+    if (isPlaying) {
+      cancelAnimationFrame(playRAF);
+      isPlaying = false;
+    } else {
+      isPlaying = true;
+      (function loop() {
+        playOffset += 0.8;
+        redrawTrail();
+        playRAF = requestAnimationFrame(loop);
+      })();
+    }
   });
 
   document.getElementById("print-btn").addEventListener("click", () => {
-    window.print();
+    const exp = document.createElement("canvas");
+    exp.width  = trailCanvas.width;
+    exp.height = trailCanvas.height;
+    const ec = exp.getContext("2d");
+    ec.fillStyle = "#000";
+    ec.fillRect(0, 0, exp.width, exp.height);
+    ec.drawImage(trailCanvas, 0, 0);
+    const a = document.createElement("a");
+    a.download = "trail.png";
+    a.href = exp.toDataURL("image/png");
+    a.click();
   });
 
   // ── Google Sheets CSV reader ──────────────────────────────
@@ -819,33 +888,17 @@
 
   loadGoogleSheetCSV().then(injectNameClouds).catch(e => console.warn("[CSV]", e));
 
-  // ── Left-panel mouse tracker → right panel follower ──────────
-  const follower = document.createElement("div");
-  follower.style.cssText = [
-    "position:absolute",
-    "width:10px",
-    "height:10px",
-    "background:#00ff41",
-    "border-radius:50%",
-    "pointer-events:none",
-    "transform:translate(-50%,-50%)",
-    "display:none",
-    "z-index:999"
-  ].join(";");
-  rightPanel.appendChild(follower);
-
+  // ── Left-panel mouse → trail on right panel ──────────────
   leftPanel.addEventListener("mousemove", e => {
     const lr = leftPanel.getBoundingClientRect();
-    const rr = rightPanel.getBoundingClientRect();
     const xPct = (e.clientX - lr.left) / lr.width;
     const yPct = (e.clientY - lr.top)  / lr.height;
-    follower.style.display = "block";
-    follower.style.left = (xPct * rr.width)  + "px";
-    follower.style.top  = (yPct * rr.height) + "px";
+    trailPts.push({ x: xPct, y: yPct });
+    if (!isPlaying) redrawTrail();
   });
 
   leftPanel.addEventListener("mouseleave", () => {
-    follower.style.display = "none";
+    trailPts.push(null); // pen lift
   });
 </script>
 
