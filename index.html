@@ -818,6 +818,35 @@
   }
 
   loadGoogleSheetCSV().then(injectNameClouds).catch(e => console.warn("[CSV]", e));
+
+  // ── Left-panel mouse tracker → right panel follower ──────────
+  const follower = document.createElement("div");
+  follower.style.cssText = [
+    "position:absolute",
+    "width:10px",
+    "height:10px",
+    "background:#00ff41",
+    "border-radius:50%",
+    "pointer-events:none",
+    "transform:translate(-50%,-50%)",
+    "display:none",
+    "z-index:999"
+  ].join(";");
+  rightPanel.appendChild(follower);
+
+  leftPanel.addEventListener("mousemove", e => {
+    const lr = leftPanel.getBoundingClientRect();
+    const rr = rightPanel.getBoundingClientRect();
+    const xPct = (e.clientX - lr.left) / lr.width;
+    const yPct = (e.clientY - lr.top)  / lr.height;
+    follower.style.display = "block";
+    follower.style.left = (xPct * rr.width)  + "px";
+    follower.style.top  = (yPct * rr.height) + "px";
+  });
+
+  leftPanel.addEventListener("mouseleave", () => {
+    follower.style.display = "none";
+  });
 </script>
 
 </body>
