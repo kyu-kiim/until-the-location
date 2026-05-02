@@ -182,7 +182,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      border: 1.5px solid #bbb;
+      border: 1.5px solid transparent;
       transform: translate(var(--bx, 0px), var(--by, 0px));
       transition: border-color 0.12s;
       pointer-events: none;
@@ -730,7 +730,9 @@
 
   function driveImgUrl(shareUrl) {
     const m = shareUrl.match(/\/d\/([^/?]+)/);
-    return m ? `https://drive.google.com/uc?export=view&id=${m[1]}` : shareUrl;
+    if (!m) return shareUrl;
+    const id = m[1];
+    return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
   }
 
   function randOffset(el, maxX = 6, maxY = 4) {
