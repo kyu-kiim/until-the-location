@@ -152,22 +152,30 @@
     }
 
     .name-tag {
+      position: relative;
       font-family: Arial, Helvetica, sans-serif;
       font-size: clamp(0.55rem, 1.6vw, 1.35rem);
       color: #111;
       cursor: default;
       padding: 2px 6px;
-      border: 1.5px solid transparent;
-      transition: color 0.12s, border-color 0.12s;
       max-width: 100%;
       word-break: keep-all;
       overflow-wrap: break-word;
+      transition: color 0.12s;
     }
 
-    .name-tag:hover {
-      color: #00ff41;
-      border-color: #00ff41;
+    .name-tag::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1.5px solid transparent;
+      transform: translate(var(--bx, 0px), var(--by, 0px));
+      transition: border-color 0.12s;
+      pointer-events: none;
     }
+
+    .name-tag:hover { color: #00ff41; }
+    .name-tag:hover::before { border-color: #00ff41; }
 
     /* ── Divider ────────────────────────────────────────────── */
     #divider {
@@ -365,7 +373,6 @@
 <!-- ── Right panel ─────────────────────────────────────── -->
 <div id="right">
   <div id="right-controls">
-    <button class="right-btn" id="csv-btn">CSV</button>
     <button class="right-btn" id="play-btn">PLAY</button>
     <button class="right-btn" id="print-btn">PRINT</button>
   </div>
@@ -588,6 +595,14 @@
         span.className = "name-tag";
         span.textContent = name;
         span.style.marginRight = (Math.random() * 48 + 4).toFixed(1) + "px";
+
+        // 30% 확률로 정중앙, 나머지는 ±4px / ±3px 랜덤 오프셋
+        const centered = Math.random() < 0.3;
+        const bx = centered ? 0 : +(Math.random() * 8 - 4).toFixed(1);
+        const by = centered ? 0 : +(Math.random() * 6 - 3).toFixed(1);
+        span.style.setProperty("--bx", bx + "px");
+        span.style.setProperty("--by", by + "px");
+
         cloud.appendChild(span);
       });
 
