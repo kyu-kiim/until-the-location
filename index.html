@@ -54,7 +54,7 @@
       bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      width: 1px;
+      width: 2px;
       background: #ccc;
     }
 
@@ -66,7 +66,7 @@
       height: 10px;
       border-radius: 50%;
       border: 1.5px solid #bbb;
-      background: #fff;
+      background: #ffff;
       cursor: pointer;
       pointer-events: all;
       transition: border-color 0.2s, background 0.2s;
@@ -75,7 +75,42 @@
 
     .chapter-dot.active {
       border-color: #00ff41;
-      background: transparent;
+      background: #ffff;
+    }
+
+    .chapter-dot .dot-label {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      white-space: nowrap;
+      font-family: 'Courier New', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: #00ff41;
+      text-transform: uppercase;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .chapter-dot:hover .dot-label,
+    .chapter-dot.active:hover .dot-label {
+      opacity: 1;
+    }
+
+    /* Exact scroll position indicator */
+    #scroll-indicator {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 2px;
+      background: #00ff41;
+      box-shadow: 0 0 6px #00ff41;
+      pointer-events: none;
+      z-index: 12;
+      transition: top 0.08s linear;
     }
 
     /* Left content */
@@ -176,7 +211,8 @@
   <!-- Sticky chapter nav -->
   <div id="chapter-nav">
     <div id="nav-line"></div>
-    <!-- dots injected by JS -->
+    <!-- dots + scroll indicator injected by JS -->
+    <div id="scroll-indicator"></div>
   </div>
 
   <!-- Scrollable content -->
@@ -238,9 +274,15 @@
   const chapters   = Array.from(document.querySelectorAll(".chapter"));
 
   // ── Build chapter dots ────────────────────────────────────
-  const dots = chapters.map((_, i) => {
+  const dots = chapters.map((ch, i) => {
     const dot = document.createElement("div");
     dot.className = "chapter-dot" + (i === 0 ? " active" : "");
+
+    const label = document.createElement("span");
+    label.className = "dot-label";
+    label.textContent = ch.querySelector("h2")?.textContent ?? `Chapter ${i + 1}`;
+    dot.appendChild(label);
+
     chapterNav.appendChild(dot);
     dot.addEventListener("click", () => {
       chapters[i].scrollIntoView({ behavior: "smooth", block: "start" });
@@ -259,7 +301,19 @@
     });
   }
   positionDots();
-  window.addEventListener("resize", positionDots);
+  window.addEventListener("resize", () => { positionDots(); updateScrollIndicator(); });
+
+  // ── Scroll indicator ──────────────────────────────────────
+  const scrollIndicator = document.getElementById("scroll-indicator");
+  const PAD = 40;
+
+  function updateScrollIndicator() {
+    const maxScroll = leftPanel.scrollHeight - leftPanel.clientHeight;
+    const ratio     = maxScroll > 0 ? leftPanel.scrollTop / maxScroll : 0;
+    const navH      = window.innerHeight;
+    const top       = PAD + ratio * (navH - PAD * 2);
+    scrollIndicator.style.top = top + "px";
+  }
 
   // ── Active dot on scroll ──────────────────────────────────
   function updateActiveDot() {
@@ -272,9 +326,11 @@
     });
 
     dots.forEach((d, i) => d.classList.toggle("active", i === activeIdx));
+    updateScrollIndicator();
   }
 
   leftPanel.addEventListener("scroll", updateActiveDot);
+  updateScrollIndicator();
 
   // ── Draggable divider ─────────────────────────────────────
   let dragging = false;
