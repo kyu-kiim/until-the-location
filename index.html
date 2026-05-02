@@ -129,13 +129,16 @@
     /* Left content */
     #left-content {
       flex: 1;
-      padding: 60px 48px 120px 52px;
+      padding: 0 48px 0 52px;
       min-height: 100%;
     }
 
     .chapter {
-      min-height: 80vh;
-      padding-bottom: 60px;
+      min-height: 100vh;
+      padding: 60px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .chapter h2 {
@@ -150,7 +153,7 @@
 
     .chapter p {
       font-family: 'AffairsTest', serif;
-      font-size: 0.9rem;
+      font-size: clamp(0.75rem, 1.1vw, 1rem);
       line-height: 1.85;
       color: #222;
       max-width: 480px;
@@ -239,9 +242,9 @@
     .detail-name {
       position: relative;
       display: inline-block;
-      color: #000;
+      color: #fff;
       font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(1.1rem, 2.4vw, 1.8rem);
+      font-size: clamp(1.1rem, 10vw, 1.8rem);
       font-weight: 700;
       padding: 5px 14px;
       align-self: flex-start;
@@ -277,8 +280,8 @@
     }
 
     /* 계단식 오른쪽 이동 */
-    #detail-type { margin-left: clamp(130px, 15vw, 260px); }
-    #detail-role { margin-left: clamp(210px, 23vw, 400px); }
+    #detail-type { margin-left: clamp(130px, 20vw, 260px); }
+    #detail-role { margin-left: clamp(210px, 30vw, 400px); }
 
     #detail-text {
       font-family: 'AffairsTest', serif;
@@ -287,7 +290,7 @@
       color: #222;
       max-width: 360px;
       margin-top: 24px;
-      margin-left: clamp(160px, 18vw, 320px);
+      margin-left: clamp(160px, 23vw, 320px);
     }
 
     #detail-close {
