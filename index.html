@@ -368,6 +368,17 @@
       color: #000;
     }
 
+    /* ── CMS layer separation ───────────────────────────────── */
+    #left .name-cloud {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #mirror-inner .chapter h2,
+    #mirror-inner .chapter p {
+      visibility: hidden;
+    }
+
     /* ── Chapter overlay ────────────────────────────────────── */
     #chapter-overlay {
       position: fixed;
@@ -747,7 +758,8 @@
   const mirrorEl = document.createElement('div');
   mirrorEl.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;background:#fff;';
   const mirrorInner = document.createElement('div');
-  mirrorInner.style.cssText = 'position:absolute;left:0;right:0;padding:0 48px 0 52px;transform:scaleX(-1);transform-origin:center top;';
+  mirrorInner.id = 'mirror-inner';
+  mirrorInner.style.cssText = 'position:absolute;left:0;right:0;padding:0 48px 0 52px;';
   mirrorEl.appendChild(mirrorInner);
   rightPanel.insertBefore(mirrorEl, rightPanel.firstChild);
 
