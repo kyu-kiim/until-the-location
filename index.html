@@ -129,7 +129,7 @@
     /* Left content */
     #left-content {
       flex: 1;
-      padding: 0 48px 0 52px;
+      padding: 0 32px;
       min-height: 100%;
     }
 
@@ -139,12 +139,14 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
+      text-align: center;
       position: relative;
     }
 
     .chapter h2 {
       font-family: 'NeueHaasGrot', sans-serif;
-      font-size: 0.7rem;
+      font-size: clamp(0.8rem, 1.1vw, 1.1rem);
       font-weight: normal;
       color: #aaa;
       letter-spacing: 0.15em;
@@ -154,38 +156,30 @@
 
     .chapter p {
       font-family: 'AffairsTest', serif;
-      font-size: clamp(0.75rem, 1.1vw, 1rem);
+      font-size: clamp(1.1rem, 1.8vw, 1.6rem);
       line-height: 1.85;
       color: #222;
-      width: 100%;
+      max-width: 680px;
       margin-top: 0;
       margin-bottom: 2em;
     }
 
     .name-cloud {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 60px 0;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      align-content: flex-start;
-      row-gap: 14px;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
     }
 
     .name-tag {
-      position: relative;
+      position: absolute;
+      transform: translate(-50%, -50%);
       font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(0.55rem, 1.6vw, 1.35rem);
+      font-size: clamp(1rem, 2.8vw, 2.8rem);
       color: #111;
-      cursor: default;
+      cursor: pointer;
       padding: 2px 6px;
-      max-width: 100%;
-      word-break: keep-all;
-      overflow-wrap: break-word;
+      white-space: nowrap;
       transition: color 0.12s;
     }
 
@@ -423,7 +417,10 @@
     /* ── CMS layer separation ───────────────────────────────── */
     #left .name-cloud {
       opacity: 0;
-      pointer-events: none;
+    }
+
+    #left .name-tag {
+      pointer-events: all;
     }
 
     #mirror-inner .chapter h2,
@@ -1010,13 +1007,15 @@
 
       byRole[roleKey].forEach(({ name, row }) => {
         const span = document.createElement("span");
-        span.className = "name-tag";
+        span.className   = "name-tag";
         span.textContent = name;
-        span.style.marginRight = (Math.random() * 48 + 4).toFixed(1) + "px";
 
-        const centered = Math.random() < 0.3;
-        const bx = centered ? 0 : +(Math.random() * 8 - 4).toFixed(1);
-        const by = centered ? 0 : +(Math.random() * 6 - 3).toFixed(1);
+        // scatter randomly across full chapter area (keep clear of very edges)
+        span.style.top  = (Math.random() * 80 + 10).toFixed(2) + "%";
+        span.style.left = (Math.random() * 80 + 10).toFixed(2) + "%";
+
+        const bx = +(Math.random() * 10 - 5).toFixed(1);
+        const by = +(Math.random() * 8  - 4).toFixed(1);
         span.style.setProperty("--bx", bx + "px");
         span.style.setProperty("--by", by + "px");
 
@@ -1024,7 +1023,7 @@
         cloud.appendChild(span);
       });
 
-      ch.querySelector("p")?.after(cloud);
+      ch.appendChild(cloud);
     });
   }
 
