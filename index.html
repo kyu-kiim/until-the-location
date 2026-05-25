@@ -793,7 +793,7 @@
     const y = scrollY(cursorPct.yScroll);
     tCtx.beginPath();
     tCtx.arc(x, y, 28, 0, Math.PI * 2);
-    tCtx.strokeStyle = '#00ff41';
+    tCtx.strokeStyle = cursorNearCMS ? '#ff3322' : '#00ff41';
     tCtx.lineWidth   = 1.5;
     tCtx.stroke();
   }
@@ -804,17 +804,11 @@
     tCtx.fillStyle = '#000';
     tCtx.fillRect(0, 0, w, h);
     const off = playOffset % h;
-    // punch neon-reveal holes for all trail points
     tCtx.globalCompositeOperation = 'destination-out';
     tCtx.fillStyle = '#fff';
     drawPath(-off);
     drawPath(h - off);
-    // overlay semi-transparent red on near-CMS segments (neon still shows through)
     tCtx.globalCompositeOperation = 'source-over';
-    tCtx.fillStyle = 'rgba(255, 0, 0, 0.55)';
-    drawPath(-off,  true);
-    drawPath(h - off, true);
-    // cursor always neon
     drawCursor();
   }
 
@@ -985,13 +979,18 @@
   loadGoogleSheetCSV().then(injectNameClouds).catch(e => console.warn("[CSV]", e));
 
   // ── Left-panel mouse → trail on right panel ──────────────
+  let leftPtrDown = false;
+  leftPanel.addEventListener('pointerdown', () => { leftPtrDown = true; });
+  document.addEventListener('pointerup',    () => { leftPtrDown = false; });
+  document.addEventListener('pointercancel',() => { leftPtrDown = false; });
+
   leftPanel.addEventListener("mousemove", e => {
     const lr = leftPanel.getBoundingClientRect();
     const xPct    = (e.clientX - lr.left) / lr.width;
     const yScroll = (e.clientY - lr.top + leftPanel.scrollTop) / leftPanel.scrollHeight;
     cursorNearCMS = checkNearCMS(e.clientX, e.clientY);
     cursorPct     = { x: xPct, yScroll };
-    if (e.buttons === 0) {
+    if (!leftPtrDown) {
       trailPts.push({ x: xPct, yScroll, nearCMS: cursorNearCMS });
     }
     if (!isPlaying) redrawTrail();
