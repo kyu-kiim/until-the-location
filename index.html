@@ -739,6 +739,19 @@
   let playOffset = 0;
   let playRAF    = null;
   let isPlaying  = false;
+  let cursorPct    = null;  // current mouse position as 0-1 ratios
+  let cursorNearCMS = false;
+
+  function checkNearCMS(clientX, clientY) {
+    const tags = leftPanel.querySelectorAll('.name-tag');
+    const PAD  = 60;
+    for (const tag of tags) {
+      const r = tag.getBoundingClientRect();
+      if (clientX >= r.left - PAD && clientX <= r.right  + PAD &&
+          clientY >= r.top  - PAD && clientY <= r.bottom + PAD) return true;
+    }
+    return false;
+  }
 
   function resizeTrail() {
     trailCanvas.width  = rightPanel.clientWidth;
@@ -789,6 +802,17 @@
     tCtx.restore();
   }
 
+  function drawCursor() {
+    if (!cursorPct) return;
+    const w = trailCanvas.width, h = trailCanvas.height;
+    const x = cursorPct.x * w, y = cursorPct.y * h;
+    tCtx.beginPath();
+    tCtx.arc(x, y, 28, 0, Math.PI * 2);
+    tCtx.strokeStyle = cursorNearCMS ? '#ff0000' : '#00ff41';
+    tCtx.lineWidth   = 1.5;
+    tCtx.stroke();
+  }
+
   function redrawTrail() {
     const w = trailCanvas.width, h = trailCanvas.height;
     tCtx.globalCompositeOperation = 'source-over';
@@ -800,6 +824,7 @@
     drawPath(-off);
     drawPath(h - off);
     tCtx.globalCompositeOperation = 'source-over';
+    drawCursor();
   }
 
   new ResizeObserver(resizeTrail).observe(rightPanel);
@@ -807,7 +832,7 @@
 
   // ── Mirror background ──────────────────────────────────────────
   const mirrorEl = document.createElement('div');
-  mirrorEl.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;background:#fff;';
+  mirrorEl.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;background:#00ff41;';
   const mirrorInner = document.createElement('div');
   mirrorInner.id = 'mirror-inner';
   mirrorInner.style.cssText = 'position:absolute;left:0;right:0;padding:0 48px 0 52px;';
@@ -1004,12 +1029,17 @@
     const lr = leftPanel.getBoundingClientRect();
     const xPct = (e.clientX - lr.left) / lr.width;
     const yPct = (e.clientY - lr.top)  / lr.height;
+    cursorPct     = { x: xPct, y: yPct };
+    cursorNearCMS = checkNearCMS(e.clientX, e.clientY);
     trailPts.push({ x: xPct, y: yPct });
     if (!isPlaying) redrawTrail();
   });
 
   leftPanel.addEventListener("mouseleave", () => {
-    trailPts.push(null); // pen lift
+    trailPts.push(null);
+    cursorPct     = null;
+    cursorNearCMS = false;
+    if (!isPlaying) redrawTrail();
   });
 
   // ── Intro animation ───────────────────────────────────────────
