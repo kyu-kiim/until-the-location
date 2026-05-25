@@ -348,6 +348,7 @@
       right: 24px;
       display: flex;
       gap: 12px;
+      z-index: 2;
     }
 
     .right-btn {
@@ -569,7 +570,6 @@
     chapterNav.appendChild(dot);
     dot.addEventListener("click", () => {
       chapters[i].scrollIntoView({ behavior: "smooth", block: "start" });
-      showOverlay(chapters[i]);
     });
     return dot;
   });
@@ -616,15 +616,12 @@
 
     if (activeIdx !== lastActiveIdx) {
       lastActiveIdx = activeIdx;
-      showOverlay(chapters[activeIdx]);
     }
   }
 
   leftPanel.addEventListener("scroll", updateActiveDot);
   updateScrollIndicator();
 
-  // ── Show first chapter overlay on load ────────────────────
-  showOverlay(chapters[0]);
 
   // ── Draggable divider ─────────────────────────────────────
   let dragging = false;
@@ -687,7 +684,8 @@
     redrawTrail();
   }
 
-  const PIXEL = 3; // size of each "pixel" block in screen pixels
+  const PIXEL  = 3;   // pixel grid snap
+  const REVEAL = 12;  // reveal brush size per pixel block
 
   function pixelLine(x0, y0, x1, y1) {
     x0 = Math.round(x0 / PIXEL) * PIXEL;
@@ -696,9 +694,10 @@
     y1 = Math.round(y1 / PIXEL) * PIXEL;
     const dx = Math.abs(x1 - x0), sx = x0 < x1 ? PIXEL : -PIXEL;
     const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? PIXEL : -PIXEL;
+    const half = (REVEAL - PIXEL) >> 1;
     let err = dx + dy;
     while (true) {
-      tCtx.fillRect(x0, y0, PIXEL, PIXEL);
+      tCtx.fillRect(x0 - half, y0 - half, REVEAL, REVEAL);
       if (x0 === x1 && y0 === y1) break;
       const e2 = 2 * err;
       if (e2 >= dy) { err += dy; x0 += sx; }
@@ -711,7 +710,7 @@
     tCtx.save();
     tCtx.beginPath(); tCtx.rect(0, 0, w, h); tCtx.clip();
     tCtx.translate(0, shiftY);
-    tCtx.fillStyle = "#00ff41";
+    const half = (REVEAL - PIXEL) >> 1;
     let prev = null;
     for (const pt of trailPts) {
       if (!pt) { prev = null; continue; }
@@ -719,7 +718,9 @@
       if (prev) {
         pixelLine(prev.x * w, prev.y * h, x, y);
       } else {
-        tCtx.fillRect(Math.round(x / PIXEL) * PIXEL, Math.round(y / PIXEL) * PIXEL, PIXEL, PIXEL);
+        const px = Math.round(x / PIXEL) * PIXEL;
+        const py = Math.round(y / PIXEL) * PIXEL;
+        tCtx.fillRect(px - half, py - half, REVEAL, REVEAL);
       }
       prev = pt;
     }
@@ -727,15 +728,43 @@
   }
 
   function redrawTrail() {
-    const h = trailCanvas.height;
-    tCtx.clearRect(0, 0, trailCanvas.width, h);
+    const w = trailCanvas.width, h = trailCanvas.height;
+    tCtx.globalCompositeOperation = 'source-over';
+    tCtx.fillStyle = '#000';
+    tCtx.fillRect(0, 0, w, h);
+    tCtx.globalCompositeOperation = 'destination-out';
+    tCtx.fillStyle = '#fff';
     const off = playOffset % h;
-    drawPath(-off);        // main pass (shifted up)
-    drawPath(h - off);     // wrap-around pass
+    drawPath(-off);
+    drawPath(h - off);
+    tCtx.globalCompositeOperation = 'source-over';
   }
 
   new ResizeObserver(resizeTrail).observe(rightPanel);
   resizeTrail();
+
+  // ── Mirror background ──────────────────────────────────────────
+  const mirrorEl = document.createElement('div');
+  mirrorEl.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;background:#fff;';
+  const mirrorInner = document.createElement('div');
+  mirrorInner.style.cssText = 'position:absolute;left:0;right:0;padding:0 48px 0 52px;transform:scaleX(-1);transform-origin:center top;';
+  mirrorEl.appendChild(mirrorInner);
+  rightPanel.insertBefore(mirrorEl, rightPanel.firstChild);
+
+  const leftContent = document.getElementById('left-content');
+
+  function syncMirrorScroll() {
+    mirrorInner.style.top = -leftPanel.scrollTop + 'px';
+  }
+
+  function syncMirrorContent() {
+    mirrorInner.innerHTML = leftContent.innerHTML;
+    syncMirrorScroll();
+  }
+
+  leftPanel.addEventListener('scroll', syncMirrorScroll);
+  new MutationObserver(syncMirrorContent).observe(leftContent, { childList: true, subtree: true });
+  syncMirrorContent();
 
   // ── Buttons ───────────────────────────────────────────────
   document.getElementById("play-btn").addEventListener("click", () => {
