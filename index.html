@@ -368,6 +368,47 @@
       color: #000;
     }
 
+    /* ── Intro landing ─────────────────────────────────────── */
+    #intro {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+    }
+
+    #intro-left {
+      width: 50%;
+      flex-shrink: 0;
+      background: #fff;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 5vw;
+      font-family: 'NeueHaasGrot', sans-serif;
+      font-size: clamp(2.5rem, 8vw, 8rem);
+      font-weight: 900;
+      color: #000;
+      line-height: 1.05;
+    }
+
+    #intro-right {
+      flex: 1;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 0 3vw;
+      overflow: hidden;
+    }
+
+    .intro-word {
+      font-family: 'NeueHaasGrot', sans-serif;
+      font-weight: 900;
+      color: #00ff41;
+      line-height: 1.0;
+      opacity: 0;
+    }
+
     /* ── CMS layer separation ───────────────────────────────── */
     #left .name-cloud {
       opacity: 0;
@@ -442,6 +483,12 @@
   </style>
 </head>
 <body>
+
+<!-- ── Intro overlay ───────────────────────────────────── -->
+<div id="intro">
+  <div id="intro-left">GPS<br>IS...</div>
+  <div id="intro-right"></div>
+</div>
 
 <!-- ── Left panel ──────────────────────────────────────── -->
 <div id="left">
@@ -960,6 +1007,64 @@
   leftPanel.addEventListener("mouseleave", () => {
     trailPts.push(null); // pen lift
   });
+
+  // ── Intro animation ───────────────────────────────────────────
+  (async () => {
+    await document.fonts.ready;
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    const blink = async (el, times = 3, ms = 75) => {
+      for (let i = 0; i < times; i++) {
+        el.style.opacity = '0'; await sleep(ms);
+        el.style.opacity = '1'; await sleep(ms);
+      }
+    };
+
+    const intro      = document.getElementById('intro');
+    const introRight = document.getElementById('intro-right');
+
+    // Phase 1: GPS process words appear one by one, each blinking in
+    for (const word of ['CALCULATE', 'AVERAGE', 'ERROR', 'DATA']) {
+      const el = document.createElement('div');
+      el.className    = 'intro-word';
+      el.style.fontSize = 'clamp(2rem, 13vw, 13rem)';
+      el.textContent  = word;
+      introRight.appendChild(el);
+      await sleep(40);
+      el.style.opacity = '1';
+      await blink(el, 3, 75);
+      await sleep(280);
+    }
+
+    await sleep(700);
+
+    // Phase 2: NOT LOCATION — full screen, large
+    introRight.innerHTML = '';
+    for (const word of ['NOT', 'LOCATION']) {
+      const el = document.createElement('div');
+      el.className    = 'intro-word';
+      el.style.fontSize = 'clamp(3rem, 20vw, 20rem)';
+      el.style.opacity  = '1';
+      el.textContent  = word;
+      introRight.appendChild(el);
+    }
+
+    await sleep(1000);
+
+    // Phase 3: both screens flash × 3
+    for (let i = 0; i < 3; i++) {
+      intro.style.visibility = 'hidden'; await sleep(130);
+      intro.style.visibility = 'visible'; await sleep(130);
+    }
+
+    await sleep(200);
+
+    // Phase 4: fade out → main site
+    intro.style.transition = 'opacity 0.5s ease';
+    intro.style.opacity    = '0';
+    await sleep(500);
+    intro.remove();
+  })();
 </script>
 
 </body>
