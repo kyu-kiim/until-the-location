@@ -196,117 +196,119 @@
     .name-tag:hover { color: #00ff41; cursor: pointer; }
     .name-tag:hover::before { border-color: #00ff41; }
 
-    /* ── Detail overlay ─────────────────────────────────────── */
-    #detail-overlay {
+    /* ── Detail panel ───────────────────────────────────────── */
+    #detail-panel {
       position: fixed;
-      inset: 5% 0;
-      z-index: 600;
-      background: rgba(255, 255, 255, 0.92);
+      top: 0;
+      right: 0;
+      width: 280px;
+      height: 100vh;
+      background: #000;
+      z-index: 700;
       display: flex;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.22s ease;
+      flex-direction: column;
+      border-left: 1px solid #00ff41;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
     }
 
-    #detail-overlay.visible {
-      opacity: 1;
-      pointer-events: all;
-    }
+    #detail-panel.visible { transform: translateX(0); }
 
-    #detail-left {
-      width: 42%;
+    #dp-topbar {
       display: flex;
+      justify-content: flex-end;
       align-items: center;
-      justify-content: center;
-      padding: 60px 40px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #0f0f0f;
       flex-shrink: 0;
     }
 
-    #detail-img {
-      max-width: 100%;
-      max-height: 80vh;
-      object-fit: contain;
-      display: block;
-    }
-
-    #detail-right {
-      flex: 1;
-      padding: 20px 56px 48px 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      gap: 12px;
-      position: relative;
-    }
-
-    .detail-name {
-      position: relative;
-      display: inline-block;
-      color: #fff;
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(1rem, 2.1vw, 1.8rem);
-      padding: 5px 14px;
-      align-self: flex-start;
-      margin-left: clamp(60px, 9vw, 160px);
-      max-width: clamp(180px, 38%, 480px);
-      word-break: keep-all;
-      overflow-wrap: break-word;
-    }
-
-    .detail-name::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: #00ff41;
-      transform: translate(var(--bx, 0px), var(--by, 0px));
-      z-index: -1;
-    }
-
-    .detail-field {
-      position: relative;
-      display: inline-block;
-      color: #000;
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(1rem, 2.1vw, 1.8rem);
-      padding: 3px 12px;
-      align-self: flex-start;
-    }
-
-    .detail-field::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border: 1.5px solid #00ff41;
-      transform: translate(var(--bx, 0px), var(--by, 0px));
-      pointer-events: none;
-    }
-
-    /* 계단식 오른쪽 이동 */
-    /* type/role margins set dynamically via JS positionCascade() */
-
-    #detail-text {
-      font-family: 'AffairsTest', serif;
-      font-size: clamp(0.8rem, 1.2vw, 1rem);
-      line-height: 1.7;
-      color: #222;
-      max-width: 360px;
-      margin-top: 80px;
-      margin-left: clamp(160px, 23vw, 320px);
-    }
-
-    #detail-close {
-      position: absolute;
-      bottom: 32px;
-      right: 40px;
+    #dp-close {
       background: none;
       border: none;
+      color: #383838;
+      font-family: 'NeueHaasGrot', sans-serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
       cursor: pointer;
       padding: 0;
-      line-height: 0;
+      transition: color 0.15s;
+    }
+    #dp-close:hover { color: #00ff41; }
+
+    #dp-img-wrap {
+      flex-shrink: 0;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      background: #080808;
+    }
+    #dp-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    #dp-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px 20px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    #dp-body::-webkit-scrollbar { width: 0; }
+
+    #dp-name {
+      font-family: 'NeueHaasGrot', sans-serif;
+      font-size: clamp(1.2rem, 2vw, 1.55rem);
+      line-height: 1.05;
+      color: #00ff41;
+      letter-spacing: -0.01em;
+      word-break: keep-all;
     }
 
-    #detail-close svg circle { transition: stroke 0.15s; }
-    #detail-close:hover svg circle { stroke: #00ff41; }
+    #dp-rule {
+      width: 20px;
+      height: 1px;
+      background: #00ff41;
+      flex-shrink: 0;
+    }
+
+    #dp-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dp-row {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+    }
+
+    .dp-lbl {
+      font-family: 'NeueHaasGrot', sans-serif;
+      font-size: 0.52rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #2e2e2e;
+      flex-shrink: 0;
+      width: 30px;
+    }
+
+    .dp-val {
+      font-family: 'NeueHaasGrot', sans-serif;
+      font-size: 0.72rem;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    #dp-text {
+      font-family: 'AffairsTest', serif;
+      font-size: 0.8rem;
+      line-height: 1.85;
+      color: #484848;
+      margin-top: 4px;
+    }
 
     /* ── Divider ────────────────────────────────────────────── */
     #divider {
@@ -339,33 +341,6 @@
       background: #000;
       position: relative;
       overflow: hidden;
-    }
-
-    /* Buttons */
-    #right-controls {
-      position: absolute;
-      bottom: 24px;
-      right: 24px;
-      display: flex;
-      gap: 12px;
-      z-index: 2;
-    }
-
-    .right-btn {
-      background: transparent;
-      border: 1.5px solid #00ff41;
-      color: #00ff41;
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: 0.72rem;
-      letter-spacing: 0.18em;
-      padding: 7px 18px;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .right-btn:hover {
-      background: #00ff41;
-      color: #000;
     }
 
     /* ── Intro landing ─────────────────────────────────────── */
@@ -557,23 +532,28 @@
   <div id="divider-handle"></div>
 </div>
 
-<!-- ── Detail overlay ──────────────────────────────────── -->
-<div id="detail-overlay">
-  <div id="detail-left">
-    <img id="detail-img" src="" alt="">
+<!-- ── Detail panel ─────────────────────────────────────── -->
+<div id="detail-panel">
+  <div id="dp-topbar">
+    <button id="dp-close">CLOSE</button>
   </div>
-  <div id="detail-right">
-    <span class="detail-name" id="detail-name"></span>
-    <span class="detail-field" id="detail-type"></span>
-    <span class="detail-field" id="detail-role"></span>
-    <p id="detail-text"></p>
-    <button id="detail-close" aria-label="Close">
-      <svg viewBox="0 0 80 80" width="60" height="60" fill="none">
-        <circle cx="40" cy="40" r="37" stroke="#000" stroke-width="1.5"/>
-        <circle cx="40" cy="40" r="25" stroke="#000" stroke-width="1.5"/>
-        <circle cx="40" cy="40" r="11" stroke="#000" stroke-width="1.5"/>
-      </svg>
-    </button>
+  <div id="dp-img-wrap">
+    <img id="dp-img" src="" alt="">
+  </div>
+  <div id="dp-body">
+    <div id="dp-name"></div>
+    <div id="dp-rule"></div>
+    <div id="dp-meta">
+      <div class="dp-row">
+        <span class="dp-lbl">TYPE</span>
+        <span class="dp-val" id="dp-type"></span>
+      </div>
+      <div class="dp-row">
+        <span class="dp-lbl">ROLE</span>
+        <span class="dp-val" id="dp-role"></span>
+      </div>
+    </div>
+    <p id="dp-text"></p>
   </div>
 </div>
 
@@ -591,12 +571,7 @@
 </div>
 
 <!-- ── Right panel ─────────────────────────────────────── -->
-<div id="right">
-  <div id="right-controls">
-    <button class="right-btn" id="play-btn">PLAY</button>
-    <button class="right-btn" id="print-btn">PRINT</button>
-  </div>
-</div>
+<div id="right"></div>
 
 <script>
   const leftPanel  = document.getElementById("left");
@@ -747,7 +722,7 @@
 
   function checkNearCMS(clientX, clientY) {
     const tags = leftPanel.querySelectorAll('.name-tag');
-    const PAD  = 60;
+    const PAD  = 18;
     for (const tag of tags) {
       const r = tag.getBoundingClientRect();
       if (clientX >= r.left - PAD && clientX <= r.right  + PAD &&
@@ -834,9 +809,9 @@
     tCtx.fillStyle = '#fff';
     drawPath(-off);
     drawPath(h - off);
-    // overlay red on near-CMS segments
+    // overlay semi-transparent red on near-CMS segments (neon still shows through)
     tCtx.globalCompositeOperation = 'source-over';
-    tCtx.fillStyle = '#ff0000';
+    tCtx.fillStyle = 'rgba(255, 0, 0, 0.55)';
     drawPath(-off,  true);
     drawPath(h - off, true);
     // cursor always neon
@@ -871,34 +846,6 @@
   new MutationObserver(syncMirrorContent).observe(leftContent, { childList: true, subtree: true });
   syncMirrorContent();
 
-  // ── Buttons ───────────────────────────────────────────────
-  document.getElementById("play-btn").addEventListener("click", () => {
-    if (isPlaying) {
-      cancelAnimationFrame(playRAF);
-      isPlaying = false;
-    } else {
-      isPlaying = true;
-      (function loop() {
-        playOffset += 4;
-        redrawTrail();
-        playRAF = requestAnimationFrame(loop);
-      })();
-    }
-  });
-
-  document.getElementById("print-btn").addEventListener("click", () => {
-    const exp = document.createElement("canvas");
-    exp.width  = trailCanvas.width;
-    exp.height = trailCanvas.height;
-    const ec = exp.getContext("2d");
-    ec.fillStyle = "#000";
-    ec.fillRect(0, 0, exp.width, exp.height);
-    ec.drawImage(trailCanvas, 0, 0);
-    const a = document.createElement("a");
-    a.download = "trail.png";
-    a.href = exp.toDataURL("image/png");
-    a.click();
-  });
 
   // ── Google Sheets CSV reader ──────────────────────────────
   // 페이지에 반영하지 않고 데이터만 읽어 csvData 에 저장
@@ -947,58 +894,38 @@
   window.loadGoogleSheetCSV = loadGoogleSheetCSV;
   window.csvData = () => csvData;
 
-  // ── Detail overlay ────────────────────────────────────────
-  const detailOverlay = document.getElementById("detail-overlay");
-  const detailImg     = document.getElementById("detail-img");
-  const detailName    = document.getElementById("detail-name");
-  const detailType    = document.getElementById("detail-type");
-  const detailRole    = document.getElementById("detail-role");
-  const detailText    = document.getElementById("detail-text");
+  // ── Detail panel ──────────────────────────────────────────
+  const detailPanel = document.getElementById("detail-panel");
+  const dpImg       = document.getElementById("dp-img");
+  const dpImgWrap   = document.getElementById("dp-img-wrap");
+  const dpName      = document.getElementById("dp-name");
+  const dpType      = document.getElementById("dp-type");
+  const dpRole      = document.getElementById("dp-role");
+  const dpText      = document.getElementById("dp-text");
 
   function driveImgUrl(shareUrl) {
     const m = shareUrl.match(/\/d\/([^/?]+)/);
     if (!m) return shareUrl;
-    const id = m[1];
-    return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
-  }
-
-  function randOffset(el, maxX = 6, maxY = 4) {
-    const bx = +(Math.random() * maxX * 2 - maxX).toFixed(1);
-    const by = +(Math.random() * maxY * 2 - maxY).toFixed(1);
-    el.style.setProperty("--bx", bx + "px");
-    el.style.setProperty("--by", by + "px");
-  }
-
-  const detailRight = document.getElementById("detail-right");
-
-  function positionCascade() {
-    const pl = parseInt(getComputedStyle(detailRight).paddingLeft) || 16;
-    const overlap = 28;
-
-    const nameRight = detailName.offsetLeft + detailName.offsetWidth;
-    detailType.style.marginLeft = Math.max(0, nameRight - overlap - pl) + "px";
-
-    void detailType.offsetWidth; // force reflow
-    const typeRight = detailType.offsetLeft + detailType.offsetWidth;
-    detailRole.style.marginLeft = Math.max(0, typeRight - overlap - pl) + "px";
+    return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
   }
 
   function showDetail(row) {
-    detailName.textContent = row.name  ?? "";
-    detailType.textContent = row.type  ?? "";
-    detailRole.textContent = row.role  ?? "";
-    detailText.textContent = row.text  ?? "";
-    detailImg.src = row.img ? driveImgUrl(row.img) : "";
-    detailImg.style.display = row.img ? "block" : "none";
-
-    [detailName, detailType, detailRole].forEach(el => randOffset(el));
-    positionCascade();
-
-    detailOverlay.classList.add("visible");
+    dpName.textContent = row.name ?? "";
+    dpType.textContent = row.type ?? "";
+    dpRole.textContent = row.role ?? "";
+    dpText.textContent = row.text ?? "";
+    if (row.img) {
+      dpImg.src = driveImgUrl(row.img);
+      dpImgWrap.style.display = "block";
+    } else {
+      dpImg.src = "";
+      dpImgWrap.style.display = "none";
+    }
+    detailPanel.classList.add("visible");
   }
 
-  document.getElementById("detail-close").addEventListener("click", () => {
-    detailOverlay.classList.remove("visible");
+  document.getElementById("dp-close").addEventListener("click", () => {
+    detailPanel.classList.remove("visible");
   });
 
   // ── CSV → name-cloud injection ────────────────────────────
@@ -1064,7 +991,9 @@
     const yScroll = (e.clientY - lr.top + leftPanel.scrollTop) / leftPanel.scrollHeight;
     cursorNearCMS = checkNearCMS(e.clientX, e.clientY);
     cursorPct     = { x: xPct, yScroll };
-    trailPts.push({ x: xPct, yScroll, nearCMS: cursorNearCMS });
+    if (e.buttons === 0) {
+      trailPts.push({ x: xPct, yScroll, nearCMS: cursorNearCMS });
+    }
     if (!isPlaying) redrawTrail();
   });
 
