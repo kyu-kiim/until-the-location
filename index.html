@@ -384,11 +384,6 @@
       align-items: flex-start;
       justify-content: flex-start;
       padding: 5vw;
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(2.5rem, 8vw, 8rem);
-      font-weight: 900;
-      color: #000;
-      line-height: 1.05;
     }
 
     #intro-right {
@@ -401,12 +396,22 @@
       overflow: hidden;
     }
 
-    .intro-word {
+    .intro-word,
+    #intro-left-text {
       font-family: 'NeueHaasGrot', sans-serif;
       font-weight: 900;
-      color: #00ff41;
       line-height: 1.0;
+      font-size: clamp(2rem, 8.5vw, 9rem);
+      white-space: nowrap;
+    }
+
+    .intro-word {
+      color: #00ff41;
       opacity: 0;
+    }
+
+    #intro-left-text {
+      color: #000;
     }
 
     /* ── CMS layer separation ───────────────────────────────── */
@@ -486,7 +491,7 @@
 
 <!-- ── Intro overlay ───────────────────────────────────── -->
 <div id="intro">
-  <div id="intro-left">GPS<br>IS...</div>
+  <div id="intro-left"><div id="intro-left-text">GPS<br>IS...</div></div>
   <div id="intro-right"></div>
 </div>
 
@@ -1013,56 +1018,53 @@
     await document.fonts.ready;
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-    const blink = async (el, times = 3, ms = 75) => {
+    const blink = async (els, times = 3, ms = 150) => {
       for (let i = 0; i < times; i++) {
-        el.style.opacity = '0'; await sleep(ms);
-        el.style.opacity = '1'; await sleep(ms);
+        els.forEach(el => { el.style.opacity = '0'; }); await sleep(ms);
+        els.forEach(el => { el.style.opacity = '1'; }); await sleep(ms);
       }
     };
 
     const intro      = document.getElementById('intro');
     const introRight = document.getElementById('intro-right');
+    const introText  = document.getElementById('intro-left-text');
 
-    // Phase 1: GPS process words appear one by one, each blinking in
+    // Phase 1: words appear one by one, each blinking in
     for (const word of ['CALCULATE', 'AVERAGE', 'ERROR', 'DATA']) {
       const el = document.createElement('div');
-      el.className    = 'intro-word';
-      el.style.fontSize = 'clamp(2rem, 13vw, 13rem)';
-      el.textContent  = word;
+      el.className   = 'intro-word';
+      el.textContent = word;
       introRight.appendChild(el);
-      await sleep(40);
+      await sleep(50);
       el.style.opacity = '1';
-      await blink(el, 3, 75);
-      await sleep(280);
-    }
-
-    await sleep(700);
-
-    // Phase 2: NOT LOCATION — full screen, large
-    introRight.innerHTML = '';
-    for (const word of ['NOT', 'LOCATION']) {
-      const el = document.createElement('div');
-      el.className    = 'intro-word';
-      el.style.fontSize = 'clamp(3rem, 20vw, 20rem)';
-      el.style.opacity  = '1';
-      el.textContent  = word;
-      introRight.appendChild(el);
+      await blink([el], 3, 150);
+      await sleep(500);
     }
 
     await sleep(1000);
 
-    // Phase 3: both screens flash × 3
-    for (let i = 0; i < 3; i++) {
-      intro.style.visibility = 'hidden'; await sleep(130);
-      intro.style.visibility = 'visible'; await sleep(130);
+    // Phase 2: NOT LOCATION
+    introRight.innerHTML = '';
+    for (const word of ['NOT', 'LOCATION']) {
+      const el = document.createElement('div');
+      el.className     = 'intro-word';
+      el.style.opacity = '1';
+      el.textContent   = word;
+      introRight.appendChild(el);
     }
 
-    await sleep(200);
+    await sleep(1200);
+
+    // Phase 3: text blinks × 3 — backgrounds stay solid
+    const allText = [introText, ...introRight.querySelectorAll('.intro-word')];
+    await blink(allText, 3, 150);
+
+    await sleep(300);
 
     // Phase 4: fade out → main site
-    intro.style.transition = 'opacity 0.5s ease';
+    intro.style.transition = 'opacity 0.6s ease';
     intro.style.opacity    = '0';
-    await sleep(500);
+    await sleep(600);
     intro.remove();
   })();
 </script>
