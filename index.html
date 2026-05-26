@@ -207,7 +207,7 @@
     #left-content .cms-entry-body {
       visibility: hidden;
     }
-    /* Button stays visible — visibility:hidden on parent can be overridden by child */
+    /* Button stays visible — visibility:hidden on siblings, button explicitly visible */
     #left-content .cms-expand-btn {
       visibility: hidden;
       border: 1px solid #ccc;
@@ -558,7 +558,7 @@
   // ── Neon cursor ring on right panel ───────────────────
   const cursorCanvas = document.getElementById("cursor-canvas");
   const cCtx         = cursorCanvas.getContext("2d");
-  let   cursorPos    = null;
+  let   cursorClient = null;   // raw viewport coords
 
   function resizeCursorCanvas() {
     cursorCanvas.width  = rightPanel.clientWidth;
@@ -568,11 +568,17 @@
 
   function drawNeonCursor() {
     cCtx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
-    if (!cursorPos) return;
-    const x = cursorPos.xFrac * cursorCanvas.width;
-    const y = cursorPos.yFrac * cursorCanvas.height;
+    if (!cursorClient) return;
+
+    // Recalculate fresh each draw — handles divider resize correctly
+    const lr = leftPanel.getBoundingClientRect();
+    // X: map left-panel fraction → canvas width
+    const cx = ((cursorClient.x - lr.left) / lr.width) * cursorCanvas.width;
+    // Y: canvas top === viewport top, no offset needed
+    const cy = cursorClient.y;
+
     cCtx.beginPath();
-    cCtx.arc(x, y, 22, 0, Math.PI * 2);
+    cCtx.arc(cx, cy, 22, 0, Math.PI * 2);
     cCtx.strokeStyle = "#00ff41";
     cCtx.lineWidth   = 1;
     cCtx.stroke();
@@ -582,15 +588,11 @@
   resizeCursorCanvas();
 
   leftPanel.addEventListener("mousemove", e => {
-    const lr  = leftPanel.getBoundingClientRect();
-    cursorPos = {
-      xFrac: (e.clientX - lr.left) / lr.width,
-      yFrac: (e.clientY - lr.top)  / lr.height
-    };
+    cursorClient = { x: e.clientX, y: e.clientY };
     drawNeonCursor();
   });
   leftPanel.addEventListener("mouseleave", () => {
-    cursorPos = null;
+    cursorClient = null;
     drawNeonCursor();
   });
 
