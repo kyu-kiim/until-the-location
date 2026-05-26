@@ -8,121 +8,77 @@
     @font-face {
       font-family: 'AffairsTest';
       src: url('fonts/AffairsTest-Regular.otf') format('opentype');
-      font-weight: normal;
-      font-style: normal;
+      font-weight: normal; font-style: normal;
     }
-
     @font-face {
       font-family: 'NeueHaasGrot';
       src: url('fonts/NeueHaasGrotDisp-55Roman.otf') format('opentype');
-      font-weight: normal;
-      font-style: normal;
+      font-weight: normal; font-style: normal;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      width: 100vw;
-      height: 100vh;
+      width: 100vw; height: 100vh;
       overflow: hidden;
       background: #000;
     }
+    body { display: flex; flex-direction: row; }
 
-    body {
-      display: flex;
-      flex-direction: row;
-    }
-
-    /* ── Left panel ─────────────────────────────────────────── */
+    /* ── Left panel ──────────────────────────────────── */
     #left {
       height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow-y: auto; overflow-x: hidden;
       background: #fff;
-      display: flex;
-      flex-direction: row;
+      display: flex; flex-direction: row;
       flex-shrink: 0;
       position: relative;
     }
-
     #left::-webkit-scrollbar { width: 0; }
 
     /* Chapter nav bar */
     #chapter-nav {
-      position: sticky;
-      top: 0;
-      left: 0;
-      width: 36px;
-      height: 100vh;
+      position: sticky; top: 0; left: 0;
+      width: 36px; height: 100vh;
       flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      pointer-events: none;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 20; pointer-events: none;
     }
-
     #nav-line {
       position: absolute;
-      top: 30px;
-      bottom: 30px;
-      left: 50%;
+      top: 30px; bottom: 30px; left: 50%;
       transform: translateX(-50%);
-      width: 2px;
-      background: #ccc;
+      width: 2px; background: #ccc;
     }
-
     .chapter-dot {
-      position: absolute;
-      left: 50%;
+      position: absolute; left: 50%;
       transform: translate(-50%, -50%);
-      width: 10px;
-      height: 10px;
+      width: 10px; height: 10px;
       border-radius: 50%;
       border: 1.5px solid #bbb;
-      background: #ffff;
-      cursor: pointer;
-      pointer-events: all;
-      transition: border-color 0.2s, background 0.2s;
-      z-index: 12;
+      background: #fff;
+      cursor: pointer; pointer-events: all;
+      transition: border-color 0.2s;
+      z-index: 22;
     }
-
-    .chapter-dot.active {
-      border-color: #00ff41;
-      background: #ffff;
-    }
-
+    .chapter-dot.active { border-color: #00ff41; }
     .chapter-dot .dot-label {
-      position: absolute;
-      left: 18px;
-      top: 50%;
+      position: absolute; left: 18px; top: 50%;
       transform: translateY(-50%);
       white-space: nowrap;
       font-family: 'NeueHaasGrot', sans-serif;
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      color: #00ff41;
-      text-transform: uppercase;
-      pointer-events: none;
-      opacity: 0;
+      font-size: 0.65rem; letter-spacing: 0.1em;
+      color: #00ff41; text-transform: uppercase;
+      pointer-events: none; opacity: 0;
       transition: opacity 0.15s;
     }
-
-    .chapter-dot:hover .dot-label,
-    .chapter-dot.active:hover .dot-label {
-      opacity: 1;
-    }
-
-    /* Exact scroll position indicator */
+    .chapter-dot:hover .dot-label { opacity: 1; }
     #scroll-indicator {
-      position: absolute;
-      left: 50%;
+      position: absolute; left: 50%;
       transform: translate(-50%, -50%);
-      width: 2px;
-      height: 16px;
+      width: 2px; height: 16px;
       background: #00ff41;
-      pointer-events: none;
-      z-index: 11;
+      pointer-events: none; z-index: 21;
       transition: top 0.08s linear;
     }
 
@@ -133,17 +89,18 @@
       min-height: 100%;
     }
 
-    .chapter {
-      min-height: 100vh;
-      padding: 60px 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      position: relative;
-    }
+    /* ── Chapter ── */
+    .chapter { position: relative; }
 
+    /* Sticky chapter header */
+    .chapter-header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 5;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
     .chapter h2 {
       font-family: 'NeueHaasGrot', sans-serif;
       font-size: clamp(0.8rem, 1.1vw, 1.1rem);
@@ -153,472 +110,292 @@
       text-transform: uppercase;
       margin-bottom: 28px;
     }
-
     .chapter p {
       font-family: 'AffairsTest', serif;
       font-size: clamp(1.1rem, 1.8vw, 1.6rem);
       line-height: 1.85;
       color: #222;
       max-width: 680px;
-      margin-top: 0;
-      margin-bottom: 2em;
+      margin: 0 auto 2em;
     }
+    .chapter p:last-child { margin-bottom: 0; }
 
-    .name-cloud {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    .name-tag {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(0.6rem, 1.0vw, 0.9rem);
-      color: #111;
-      cursor: pointer;
-      padding: 2px 6px;
-      white-space: nowrap;
-      transition: color 0.12s;
-    }
-
-    .name-tag::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border: 1.5px solid transparent;
-      transform: translate(var(--bx, 0px), var(--by, 0px));
-      transition: border-color 0.12s;
-      pointer-events: none;
-    }
-
-    .name-tag:hover { color: #00ff41; cursor: pointer; }
-    .name-tag:hover::before { border-color: #00ff41; }
-
-    /* ── Detail panel ───────────────────────────────────────── */
-    #detail-panel {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 280px;
-      height: 100vh;
-      background: #000;
-      z-index: 700;
+    /* ── CMS Editorial entries ── */
+    .cms-entry {
       display: flex;
-      flex-direction: column;
-      border-left: 1px solid #00ff41;
-      transform: translateX(100%);
-      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      overflow: hidden;
+      gap: 32px;
+      padding: 56px 0;
+      align-items: flex-start;
+      border-top: 1px solid #e8e8e8;
     }
+    .cms-entry:last-child { padding-bottom: 80px; }
+    /* Alternate: even entries flip image/text */
+    .cms-entry.alt { flex-direction: row-reverse; }
 
-    #detail-panel.visible { transform: translateX(0); }
+    .cms-entry-text { flex: 1; min-width: 0; }
 
-    #dp-topbar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      padding: 14px 16px;
-      border-bottom: 1px solid #0f0f0f;
-      flex-shrink: 0;
-    }
-
-    #dp-close {
-      background: none;
-      border: none;
-      color: #383838;
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: 0.58rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      cursor: pointer;
-      padding: 0;
-      transition: color 0.15s;
-    }
-    #dp-close:hover { color: #00ff41; }
-
-    #dp-img-wrap {
-      flex-shrink: 0;
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      overflow: hidden;
-      background: #080808;
-    }
-    #dp-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-    #dp-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 22px 20px 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    #dp-body::-webkit-scrollbar { width: 0; }
-
-    #dp-name {
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(1.2rem, 2vw, 1.55rem);
-      line-height: 1.05;
-      color: #00ff41;
-      letter-spacing: -0.01em;
-      word-break: keep-all;
-    }
-
-    #dp-rule {
-      width: 20px;
-      height: 1px;
-      background: #00ff41;
-      flex-shrink: 0;
-    }
-
-    #dp-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .dp-row {
-      display: flex;
-      gap: 10px;
-      align-items: baseline;
-    }
-
-    .dp-lbl {
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: 0.52rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #2e2e2e;
-      flex-shrink: 0;
-      width: 30px;
-    }
-
-    .dp-val {
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: 0.72rem;
-      color: #666;
-      line-height: 1.4;
-    }
-
-    #dp-text {
+    .cms-entry-name {
       font-family: 'AffairsTest', serif;
-      font-size: 0.8rem;
-      line-height: 1.85;
-      color: #484848;
-      margin-top: 4px;
+      font-size: clamp(1.05rem, 1.5vw, 1.4rem);
+      font-weight: bold;
+      line-height: 1.15;
+      color: #111;
+      margin-bottom: 5px;
+    }
+    .cms-entry-type {
+      font-family: 'AffairsTest', serif;
+      font-style: italic;
+      font-size: 0.82rem;
+      color: #999;
+      margin-bottom: 18px;
+    }
+    .cms-entry-body {
+      font-family: 'AffairsTest', serif;
+      font-size: clamp(0.82rem, 1.05vw, 0.98rem);
+      line-height: 1.9;
+      color: #333;
+      text-align: justify;
     }
 
-    /* ── Divider ────────────────────────────────────────────── */
+    .cms-entry-img-wrap {
+      width: 44%;
+      flex-shrink: 0;
+    }
+    .cms-entry-img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Left: CMS entries are invisible (keep layout space) */
+    #left-content .cms-entry {
+      visibility: hidden;
+    }
+
+    /* ── Divider ── */
     #divider {
-      width: 2px;
-      height: 100%;
+      width: 2px; height: 100%;
       background: #00ff41;
       cursor: col-resize;
-      position: relative;
-      flex-shrink: 0;
-      z-index: 100;
-      user-select: none;
+      position: relative; flex-shrink: 0;
+      z-index: 100; user-select: none;
     }
-
     #divider-handle {
-      position: absolute;
-      top: 50%;
-      left: 50%;
+      position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 9px;
-      height: 9px;
-      background: #fff;
-      border: 1.5px solid #00ff41;
+      width: 9px; height: 9px;
+      background: #fff; border: 1.5px solid #00ff41;
       pointer-events: none;
     }
 
-    /* ── Right panel ────────────────────────────────────────── */
+    /* ── Right panel ── */
     #right {
-      flex: 1;
-      height: 100%;
+      flex: 1; height: 100%;
       background: #000;
+      position: relative; overflow: hidden;
+    }
+
+    /* Neon mirror */
+    #mirror-el {
+      position: absolute; inset: 0;
+      overflow: hidden; pointer-events: none;
+      background: #000;
+    }
+    #mirror-inner {
+      position: absolute; left: 0; right: 0;
+      padding: 0 32px;
+    }
+
+    /* Mirror: hide chapter nav dots if leaked */
+    #mirror-inner #chapter-nav { display: none; }
+
+    /* Mirror: chapter header takes space but is invisible */
+    #mirror-inner .chapter-header {
+      position: static !important;
+      visibility: hidden;
+      background: transparent !important;
+    }
+
+    /* Mirror: show CMS entries with neon */
+    #mirror-inner .cms-entry {
+      visibility: visible;
+      border-top: 1px solid #0d1f10;
+    }
+    #mirror-inner .cms-entry-name {
+      color: #00ff41;
+      text-shadow: 0 0 6px #00ff41, 0 0 18px #00ff41, 0 0 45px rgba(0,255,65,0.6);
+    }
+    #mirror-inner .cms-entry-type {
+      color: rgba(0,255,65,0.55);
+      text-shadow: 0 0 5px rgba(0,255,65,0.5);
+    }
+    #mirror-inner .cms-entry-body {
+      color: #00ff41;
+      text-shadow: 0 0 4px rgba(0,255,65,0.8), 0 0 14px rgba(0,255,65,0.35);
+    }
+
+    /* Neon image overlay */
+    #mirror-inner .cms-entry-img-wrap {
       position: relative;
-      overflow: hidden;
+    }
+    #mirror-inner .cms-entry-img-wrap img {
+      filter: brightness(0.65) saturate(0.15);
+      display: block;
+    }
+    #mirror-inner .cms-entry-img-wrap::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(0, 255, 65, 0.18);
+      mix-blend-mode: screen;
+      pointer-events: none;
+      box-shadow: inset 0 0 40px rgba(0,255,65,0.25);
     }
 
-    /* ── Intro landing ─────────────────────────────────────── */
+    /* ── Intro ── */
     #intro {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      display: flex;
+      position: fixed; inset: 0;
+      z-index: 1000; display: flex;
     }
-
     #intro-left {
-      width: 50%;
-      flex-shrink: 0;
+      width: 50%; flex-shrink: 0;
       background: #fff;
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-start;
+      display: flex; align-items: flex-start; justify-content: flex-start;
       padding: 5vw;
     }
-
     #intro-right {
-      flex: 1;
-      background: #000;
-      display: flex;
-      flex-direction: column;
+      flex: 1; background: #000;
+      display: flex; flex-direction: column;
       justify-content: flex-start;
       padding: 5vw 3vw 0;
       overflow: hidden;
     }
-
-    .intro-word,
-    #intro-left-text {
+    .intro-word, #intro-left-text {
       font-family: 'NeueHaasGrot', sans-serif;
-      font-weight: 900;
-      line-height: 1.0;
+      font-weight: 900; line-height: 1.0;
       font-size: clamp(2rem, 8.5vw, 9rem);
       white-space: nowrap;
     }
-
-    .intro-word {
-      color: #00ff41;
-      opacity: 0;
-    }
-
-    #intro-left-text {
-      color: #000;
-    }
-
-    /* ── CMS layer separation ───────────────────────────────── */
-    #left .name-cloud {
-      opacity: 0;
-    }
-
-    #left .name-tag {
-      pointer-events: all;
-    }
-
-    #mirror-inner .chapter h2,
-    #mirror-inner .chapter p {
-      visibility: hidden;
-    }
-
-    /* ── Chapter overlay ────────────────────────────────────── */
-    #chapter-overlay {
-      position: fixed;
-      inset: 5% 0;
-      z-index: 500;
-      background: rgba(0, 255, 65, 0.9);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 48px 72px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-    }
-
-    #chapter-overlay.visible {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    #overlay-title-box {
-      display: inline-block;
-      border: 2px solid #000;
-      padding: 4px 14px 4px 10px;
-      margin-bottom: 44px;
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #000;
-      letter-spacing: 0.02em;
-      align-self: flex-start;
-    }
-
-    #overlay-body {
-      font-family: 'NeueHaasGrot', sans-serif;
-      font-size: clamp(1.8rem, 3.6vw, 3.2rem);
-      font-weight: 800;
-      line-height: 1.3;
-      color: #000;
-      max-width: 88%;
-    }
-
-    #overlay-close {
-      position: absolute;
-      bottom: 32px;
-      right: 56px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      line-height: 0;
-    }
-
-    #overlay-close svg circle {
-      transition: stroke 0.15s;
-    }
-
-    #overlay-close:hover svg circle {
-      stroke: #fff;
-    }
+    .intro-word { color: #00ff41; opacity: 0; }
+    #intro-left-text { color: #000; }
   </style>
 </head>
 <body>
 
-<!-- ── Intro overlay ───────────────────────────────────── -->
+<!-- ── Intro ─────────────────────────────────────────── -->
 <div id="intro">
   <div id="intro-left"><div id="intro-left-text">GPS<br>IS...</div></div>
   <div id="intro-right"></div>
 </div>
 
-<!-- ── Left panel ──────────────────────────────────────── -->
+<!-- ── Left panel ───────────────────────────────────── -->
 <div id="left">
 
-  <!-- Sticky chapter nav -->
   <div id="chapter-nav">
     <div id="nav-line"></div>
-    <!-- dots + scroll indicator injected by JS -->
     <div id="scroll-indicator"></div>
   </div>
 
-  <!-- Scrollable content -->
   <div id="left-content">
-    <div class="chapter" id="ch-0">
-      <h2>GPS IS</h2>
-      <p>GPS stands for Global Positioning System, which is a system that calculates the current location using satellites. GPS receivers receive signals from several satellites orbiting the Earth and calculate where the user is on Earth. At this time, the location is usually expressed in coordinate values such as latitude, longitude, and altitude. </p>
-    <p>GPS requires information about the time spent on multiple satellites to calculate the location. Each satellite transmits the time it sent the signal and the location information together. Based on the time it took for the signal to arrive, the receiver calculates the distance to the satellite and estimates its location by comparing the distance to several satellites.</p>
-    <p>In general, GPS calculates locations using at least four satellite signals. Three satellites are used to locate space, and additional satellites are needed to correct the time error of the receiver. The more satellite signals you receive, the more stable and accurate your location calculation can be.</p>
-  </div>
-    <div class="chapter" id="ch-2">
-      <h2>AVERAGE ERROR REDUCTION</h2>
-      <p>Our GPS always provides a more stable location.It does not rely solely on a single signal, but compares values from multiple satellites together. Unstable values are adjusted, and excessively bouncing errors are smoothly cleared in the mean.</p>
-      <p>Users don't need to know complicated calculations.GPS collects wobbly signals and suggests the most plausible location. Even if there is a slight variation from the actual location, the system continues to update the values and reduce errors.</p>
-      <p>Your position is being calibrated safely.</p>
-    </div>
-    <div class="chapter" id="ch-3">
-      <h2>CREATE A REFERENCE POINT</h2>
-      <p>Our GPS creates a reliable reference point to find the exact location. Each satellite transmits its location and time, and the receiver calculates its current location based on this information.</p>
-      <p>As soon as multiple reference points overlap, the user's location is organized into a single point.</p>
-      <p>This point doesn't happen by accident. It's a stable reference value created by satellite, time, distance, and calculation.</p>
-      <p>Your position is based on a safe standard.</p>
-    </div>
-    <div class="chapter" id="ch-4">
-      <h2>NATURAL DISTURBANCE</h2>
-      <p>GPS signals pass through Earth's atmosphere and reach users.In the process, natural factors such as ionosphere, troposphere, weather, humidity, topography, and trees can affect the signal.</p>
-      <p>Slow signals are calibrated, and weak signals are compared with values from other satellites. Nature can shake signals, but the system continues to find its most stable position.</p>
-      <p>Your location is estimated to be safe even in a changing environment.</p>
-    </div>
-    <div class="chapter" id="ch-5">
-      <h2>ARTIFICIAL DISTURBANCE</h2>
-      <p>Cities are complicated, but our GPS continues to work in them as well.High buildings, tunnels, underground spaces, and radio interference can weaken the signal. Sometimes the signal is reflected off the wall and calculated as if it had returned a longer way than it actually was.</p>
-      <p><strong>But don't worry.</strong></p>
-      <p>GPS detects these artificial disturbances and re-adjusts them to the extent possible. Shaking values are corrected, and uncertain signals are compared to other signals.</p>
-      <p>Your location is safely managed even in the city.</p>
-    </div>
-    <div class="chapter" id="ch-6">
-      <h2>DATA CONVERSION</h2>
-      <p>GPS doesn't stop at showing the coordinates as they are.Latitude and longitude become points on a map, which connect to roads, buildings, and destinations. One coordinate will soon be "current location," "nearby location," "remaining distance," and "arrival time."</p>
-      <p>The user does not have to interpret the numbers.GPS provides complex location data in everyday language. Difficult-to-know coordinates are organized into familiar location information, and movements are guided through easy-to-follow routes.</p>
-      <p>Your location is being converted into safe readable information.</p>
-    </div>
-  </div>
 
+    <div class="chapter" id="ch-0">
+      <div class="chapter-header">
+        <h2>GPS IS</h2>
+        <p>GPS stands for Global Positioning System, which is a system that calculates the current location using satellites. GPS receivers receive signals from several satellites orbiting the Earth and calculate where the user is on Earth. At this time, the location is usually expressed in coordinate values such as latitude, longitude, and altitude.</p>
+        <p>GPS requires information about the time spent on multiple satellites to calculate the location. Each satellite transmits the time it sent the signal and the location information together. Based on the time it took for the signal to arrive, the receiver calculates the distance to the satellite and estimates its location by comparing the distance to several satellites.</p>
+        <p>In general, GPS calculates locations using at least four satellite signals. Three satellites are used to locate space, and additional satellites are needed to correct the time error of the receiver. The more satellite signals you receive, the more stable and accurate your location calculation can be.</p>
+      </div>
+    </div>
+
+    <div class="chapter" id="ch-2">
+      <div class="chapter-header">
+        <h2>AVERAGE ERROR REDUCTION</h2>
+        <p>Our GPS always provides a more stable location. It does not rely solely on a single signal, but compares values from multiple satellites together. Unstable values are adjusted, and excessively bouncing errors are smoothly cleared in the mean.</p>
+        <p>Users don't need to know complicated calculations. GPS collects wobbly signals and suggests the most plausible location. Even if there is a slight variation from the actual location, the system continues to update the values and reduce errors.</p>
+        <p>Your position is being calibrated safely.</p>
+      </div>
+    </div>
+
+    <div class="chapter" id="ch-3">
+      <div class="chapter-header">
+        <h2>CREATE A REFERENCE POINT</h2>
+        <p>Our GPS creates a reliable reference point to find the exact location. Each satellite transmits its location and time, and the receiver calculates its current location based on this information.</p>
+        <p>As soon as multiple reference points overlap, the user's location is organized into a single point.</p>
+        <p>This point doesn't happen by accident. It's a stable reference value created by satellite, time, distance, and calculation.</p>
+        <p>Your position is based on a safe standard.</p>
+      </div>
+    </div>
+
+    <div class="chapter" id="ch-4">
+      <div class="chapter-header">
+        <h2>NATURAL DISTURBANCE</h2>
+        <p>GPS signals pass through Earth's atmosphere and reach users. In the process, natural factors such as ionosphere, troposphere, weather, humidity, topography, and trees can affect the signal.</p>
+        <p>Slow signals are calibrated, and weak signals are compared with values from other satellites. Nature can shake signals, but the system continues to find its most stable position.</p>
+        <p>Your location is estimated to be safe even in a changing environment.</p>
+      </div>
+    </div>
+
+    <div class="chapter" id="ch-5">
+      <div class="chapter-header">
+        <h2>ARTIFICIAL DISTURBANCE</h2>
+        <p>Cities are complicated, but our GPS continues to work in them as well. High buildings, tunnels, underground spaces, and radio interference can weaken the signal. Sometimes the signal is reflected off the wall and calculated as if it had returned a longer way than it actually was.</p>
+        <p><strong>But don't worry.</strong></p>
+        <p>GPS detects these artificial disturbances and re-adjusts them to the extent possible. Shaking values are corrected, and uncertain signals are compared to other signals.</p>
+        <p>Your location is safely managed even in the city.</p>
+      </div>
+    </div>
+
+    <div class="chapter" id="ch-6">
+      <div class="chapter-header">
+        <h2>DATA CONVERSION</h2>
+        <p>GPS doesn't stop at showing the coordinates as they are. Latitude and longitude become points on a map, which connect to roads, buildings, and destinations. One coordinate will soon be "current location," "nearby location," "remaining distance," and "arrival time."</p>
+        <p>The user does not have to interpret the numbers. GPS provides complex location data in everyday language. Difficult-to-know coordinates are organized into familiar location information, and movements are guided through easy-to-follow routes.</p>
+        <p>Your location is being converted into safe readable information.</p>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-<!-- ── Divider ──────────────────────────────────────────── -->
+<!-- ── Divider ────────────────────────────────────────── -->
 <div id="divider">
   <div id="divider-handle"></div>
 </div>
 
-<!-- ── Detail panel ─────────────────────────────────────── -->
-<div id="detail-panel">
-  <div id="dp-topbar">
-    <button id="dp-close">CLOSE</button>
-  </div>
-  <div id="dp-img-wrap">
-    <img id="dp-img" src="" alt="">
-  </div>
-  <div id="dp-body">
-    <div id="dp-name"></div>
-    <div id="dp-rule"></div>
-    <div id="dp-meta">
-      <div class="dp-row">
-        <span class="dp-lbl">TYPE</span>
-        <span class="dp-val" id="dp-type"></span>
-      </div>
-      <div class="dp-row">
-        <span class="dp-lbl">ROLE</span>
-        <span class="dp-val" id="dp-role"></span>
-      </div>
-    </div>
-    <p id="dp-text"></p>
+<!-- ── Right panel ───────────────────────────────────── -->
+<div id="right">
+  <div id="mirror-el">
+    <div id="mirror-inner"></div>
   </div>
 </div>
-
-<!-- ── Chapter overlay ─────────────────────────────────── -->
-<div id="chapter-overlay">
-  <div id="overlay-title-box" id="overlay-title"></div>
-  <div id="overlay-body"></div>
-  <button id="overlay-close" aria-label="Close">
-    <svg viewBox="0 0 80 80" width="72" height="72" fill="none">
-      <circle cx="40" cy="40" r="37" stroke="#000" stroke-width="1.5"/>
-      <circle cx="40" cy="40" r="25" stroke="#000" stroke-width="1.5"/>
-      <circle cx="40" cy="40" r="11" stroke="#000" stroke-width="1.5"/>
-    </svg>
-  </button>
-</div>
-
-<!-- ── Right panel ─────────────────────────────────────── -->
-<div id="right"></div>
 
 <script>
-  const leftPanel  = document.getElementById("left");
-  const divider    = document.getElementById("divider");
-  const rightPanel = document.getElementById("right");
-  const chapterNav = document.getElementById("chapter-nav");
-  const chapters   = Array.from(document.querySelectorAll(".chapter"));
+  const leftPanel   = document.getElementById("left");
+  const divider     = document.getElementById("divider");
+  const rightPanel  = document.getElementById("right");
+  const chapterNav  = document.getElementById("chapter-nav");
+  const leftContent = document.getElementById("left-content");
+  const mirrorInner = document.getElementById("mirror-inner");
+  const chapters    = Array.from(document.querySelectorAll(".chapter"));
 
-  // ── Overlay ───────────────────────────────────────────────
-  const overlay      = document.getElementById("chapter-overlay");
-  const overlayTitle = document.getElementById("overlay-title-box");
-  const overlayBody  = document.getElementById("overlay-body");
-
-  function showOverlay(chapterEl) {
-    overlayTitle.textContent = chapterEl.querySelector("h2")?.textContent ?? "";
-    overlayBody.textContent  = chapterEl.querySelector("p")?.textContent  ?? "";
-    overlay.classList.add("visible");
-  }
-
-  function hideOverlay() {
-    overlay.classList.remove("visible");
-  }
-
-  document.getElementById("overlay-close").addEventListener("click", hideOverlay);
-
-  // ── Build chapter dots ────────────────────────────────────
+  // ── Chapter nav dots ──────────────────────────────────
   const dots = chapters.map((ch, i) => {
     const dot = document.createElement("div");
     dot.className = "chapter-dot" + (i === 0 ? " active" : "");
-
     const label = document.createElement("span");
     label.className = "dot-label";
     label.textContent = ch.querySelector("h2")?.textContent ?? `Chapter ${i + 1}`;
     dot.appendChild(label);
-
     chapterNav.appendChild(dot);
     dot.addEventListener("click", () => {
-      chapters[i].scrollIntoView({ behavior: "smooth", block: "start" });
+      ch.scrollIntoView({ behavior: "smooth", block: "start" });
     });
     return dot;
   });
 
-  // Position dots — first/last dot sit exactly at the nav line ends (30px)
   function positionDots() {
     const total = dots.length;
     const navH  = window.innerHeight;
-    const pad   = 30; // must match #nav-line top/bottom
+    const pad   = 30;
     dots.forEach((dot, i) => {
       const pct = total === 1 ? 0.5 : i / (total - 1);
       dot.style.top = (pad + pct * (navH - pad * 2)) + "px";
@@ -627,208 +404,34 @@
   positionDots();
   window.addEventListener("resize", () => { positionDots(); updateScrollIndicator(); });
 
-  // ── Scroll indicator ──────────────────────────────────────
+  // ── Scroll indicator ──────────────────────────────────
   const scrollIndicator = document.getElementById("scroll-indicator");
-  const PAD = 40;
 
   function updateScrollIndicator() {
     const maxScroll = leftPanel.scrollHeight - leftPanel.clientHeight;
     const ratio     = maxScroll > 0 ? leftPanel.scrollTop / maxScroll : 0;
     const navH      = window.innerHeight;
-    const top       = PAD + ratio * (navH - PAD * 2);
+    const top       = 40 + ratio * (navH - 80);
     scrollIndicator.style.top = top + "px";
   }
-
-  // ── Active dot on scroll ──────────────────────────────────
-  let lastActiveIdx = 0;
 
   function updateActiveDot() {
     const scrollTop = leftPanel.scrollTop;
     const viewH     = leftPanel.clientHeight;
     let activeIdx   = 0;
-
     chapters.forEach((ch, i) => {
       if (ch.offsetTop - viewH * 0.4 <= scrollTop) activeIdx = i;
     });
-
     dots.forEach((d, i) => d.classList.toggle("active", i === activeIdx));
     updateScrollIndicator();
-
-    if (activeIdx !== lastActiveIdx) {
-      lastActiveIdx = activeIdx;
-    }
   }
 
   leftPanel.addEventListener("scroll", updateActiveDot);
   updateScrollIndicator();
 
-
-  // ── Draggable divider ─────────────────────────────────────
-  let dragging = false;
-
-  divider.addEventListener("mousedown", e => {
-    dragging = true;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    e.preventDefault();
-  });
-
-  document.addEventListener("mousemove", e => {
-    if (!dragging) return;
-    const totalW   = window.innerWidth;
-    const pct      = (e.clientX / totalW) * 100;
-    const clamped  = Math.min(80, Math.max(20, pct));
-    leftPanel.style.width = clamped + "vw";
-  });
-
-  document.addEventListener("mouseup", () => {
-    if (!dragging) return;
-    dragging = false;
-    document.body.style.cursor = "";
-    document.body.style.userSelect = "";
-  });
-
-  // Touch support for divider
-  divider.addEventListener("touchstart", e => {
-    dragging = true;
-    e.preventDefault();
-  }, { passive: false });
-
-  document.addEventListener("touchmove", e => {
-    if (!dragging) return;
-    const touch   = e.touches[0];
-    const pct     = (touch.clientX / window.innerWidth) * 100;
-    const clamped = Math.min(80, Math.max(20, pct));
-    leftPanel.style.width = clamped + "vw";
-  }, { passive: true });
-
-  document.addEventListener("touchend", () => { dragging = false; });
-
-  // ── Initialize left panel width ───────────────────────────
-  leftPanel.style.width = "50vw";
-
-  // ── Right panel trail canvas ──────────────────────────────
-  const trailCanvas = document.createElement("canvas");
-  trailCanvas.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:1";
-  rightPanel.appendChild(trailCanvas);
-  const tCtx = trailCanvas.getContext("2d");
-
-  const trailPts = [];   // {x,y} as 0–1 ratios, or null = pen lift
-  let playOffset = 0;
-  let playRAF    = null;
-  let isPlaying  = false;
-  let cursorPct    = null;  // current mouse position as 0-1 ratios
-  let cursorNearCMS = false;
-
-  function checkNearCMS(clientX, clientY) {
-    const tags = leftPanel.querySelectorAll('.name-tag');
-    const PAD  = 18;
-    for (const tag of tags) {
-      const r = tag.getBoundingClientRect();
-      if (clientX >= r.left - PAD && clientX <= r.right  + PAD &&
-          clientY >= r.top  - PAD && clientY <= r.bottom + PAD) return true;
-    }
-    return false;
-  }
-
-  function resizeTrail() {
-    trailCanvas.width  = rightPanel.clientWidth;
-    trailCanvas.height = rightPanel.clientHeight;
-    redrawTrail();
-  }
-
-  const PIXEL  = 3;   // pixel grid snap
-  const REVEAL = 12;  // reveal brush size per pixel block
-
-  // Convert scroll-fraction y to canvas pixel y
-  function scrollY(yScroll) {
-    return (yScroll * leftPanel.scrollHeight - leftPanel.scrollTop)
-           / leftPanel.clientHeight * trailCanvas.height;
-  }
-
-  function pixelLine(x0, y0, x1, y1) {
-    x0 = Math.round(x0 / PIXEL) * PIXEL;
-    y0 = Math.round(y0 / PIXEL) * PIXEL;
-    x1 = Math.round(x1 / PIXEL) * PIXEL;
-    y1 = Math.round(y1 / PIXEL) * PIXEL;
-    const dx = Math.abs(x1 - x0), sx = x0 < x1 ? PIXEL : -PIXEL;
-    const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? PIXEL : -PIXEL;
-    const half = (REVEAL - PIXEL) >> 1;
-    let err = dx + dy;
-    while (true) {
-      tCtx.fillRect(x0 - half, y0 - half, REVEAL, REVEAL);
-      if (x0 === x1 && y0 === y1) break;
-      const e2 = 2 * err;
-      if (e2 >= dy) { err += dy; x0 += sx; }
-      if (e2 <= dx) { err += dx; y0 += sy; }
-    }
-  }
-
-  function drawPath(shiftY, nearOnly = false) {
-    const w = trailCanvas.width, h = trailCanvas.height;
-    tCtx.save();
-    tCtx.beginPath(); tCtx.rect(0, 0, w, h); tCtx.clip();
-    tCtx.translate(0, shiftY);
-    const half = (REVEAL - PIXEL) >> 1;
-    let prev = null;
-    for (const pt of trailPts) {
-      if (!pt) { prev = null; continue; }
-      if (nearOnly && !pt.nearCMS) { prev = null; continue; }
-      const x = pt.x * w, y = scrollY(pt.yScroll);
-      if (prev) {
-        pixelLine(prev.x * w, scrollY(prev.yScroll), x, y);
-      } else {
-        const px = Math.round(x / PIXEL) * PIXEL;
-        const py = Math.round(y / PIXEL) * PIXEL;
-        tCtx.fillRect(px - half, py - half, REVEAL, REVEAL);
-      }
-      prev = pt;
-    }
-    tCtx.restore();
-  }
-
-  function drawCursor() {
-    if (!cursorPct) return;
-    const x = cursorPct.x * trailCanvas.width;
-    const y = scrollY(cursorPct.yScroll);
-    tCtx.beginPath();
-    tCtx.arc(x, y, 28, 0, Math.PI * 2);
-    tCtx.strokeStyle = cursorNearCMS ? '#ff3322' : '#00ff41';
-    tCtx.lineWidth   = 1.5;
-    tCtx.stroke();
-  }
-
-  function redrawTrail() {
-    const w = trailCanvas.width, h = trailCanvas.height;
-    tCtx.globalCompositeOperation = 'source-over';
-    tCtx.fillStyle = '#000';
-    tCtx.fillRect(0, 0, w, h);
-    const off = playOffset % h;
-    tCtx.globalCompositeOperation = 'destination-out';
-    tCtx.fillStyle = '#fff';
-    drawPath(-off);
-    drawPath(h - off);
-    tCtx.globalCompositeOperation = 'source-over';
-    drawCursor();
-  }
-
-  new ResizeObserver(resizeTrail).observe(rightPanel);
-  resizeTrail();
-
-  // ── Mirror background ──────────────────────────────────────────
-  const mirrorEl = document.createElement('div');
-  mirrorEl.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;background:#00ff41;';
-  const mirrorInner = document.createElement('div');
-  mirrorInner.id = 'mirror-inner';
-  mirrorInner.style.cssText = 'position:absolute;left:0;right:0;padding:0 48px 0 52px;';
-  mirrorEl.appendChild(mirrorInner);
-  rightPanel.insertBefore(mirrorEl, rightPanel.firstChild);
-
-  const leftContent = document.getElementById('left-content');
-
+  // ── Mirror scroll sync ────────────────────────────────
   function syncMirrorScroll() {
-    mirrorInner.style.top = -leftPanel.scrollTop + 'px';
-    if (!isPlaying) redrawTrail();
+    mirrorInner.style.top = -leftPanel.scrollTop + "px";
   }
 
   function syncMirrorContent() {
@@ -836,16 +439,40 @@
     syncMirrorScroll();
   }
 
-  leftPanel.addEventListener('scroll', syncMirrorScroll);
-  new MutationObserver(syncMirrorContent).observe(leftContent, { childList: true, subtree: true });
+  leftPanel.addEventListener("scroll", syncMirrorScroll);
+  new MutationObserver(syncMirrorContent)
+    .observe(leftContent, { childList: true, subtree: true });
   syncMirrorContent();
 
+  // ── Draggable divider ─────────────────────────────────
+  let dragging = false;
+  divider.addEventListener("mousedown", e => {
+    dragging = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    e.preventDefault();
+  });
+  document.addEventListener("mousemove", e => {
+    if (!dragging) return;
+    const pct = Math.min(80, Math.max(20, (e.clientX / window.innerWidth) * 100));
+    leftPanel.style.width = pct + "vw";
+  });
+  document.addEventListener("mouseup", () => {
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+  });
+  divider.addEventListener("touchstart", e => { dragging = true; e.preventDefault(); }, { passive: false });
+  document.addEventListener("touchmove", e => {
+    if (!dragging) return;
+    const pct = Math.min(80, Math.max(20, (e.touches[0].clientX / window.innerWidth) * 100));
+    leftPanel.style.width = pct + "vw";
+  }, { passive: true });
+  document.addEventListener("touchend", () => { dragging = false; });
+  leftPanel.style.width = "50vw";
 
-  // ── Google Sheets CSV reader ──────────────────────────────
-  // 페이지에 반영하지 않고 데이터만 읽어 csvData 에 저장
-  // 시트 공개: 파일 → 공유 → 웹에 게시 → CSV → URL 복사
-  // 콘솔 사용: const data = await loadGoogleSheetCSV("URL")
-
+  // ── CSV parser ────────────────────────────────────────
   let csvData = null;
 
   function parseCSV(text) {
@@ -881,133 +508,88 @@
     csvData = rows.slice(1).map(row =>
       Object.fromEntries(headers.map((h, i) => [h, (row[i] ?? "").trim()]))
     );
-    console.log(`[CSV] ${csvData.length}행 로드 완료`, csvData);
+    console.log(`[CSV] ${csvData.length}행 로드`, csvData);
     return csvData;
   }
-
   window.loadGoogleSheetCSV = loadGoogleSheetCSV;
   window.csvData = () => csvData;
 
-  // ── Detail panel ──────────────────────────────────────────
-  const detailPanel = document.getElementById("detail-panel");
-  const dpImg       = document.getElementById("dp-img");
-  const dpImgWrap   = document.getElementById("dp-img-wrap");
-  const dpName      = document.getElementById("dp-name");
-  const dpType      = document.getElementById("dp-type");
-  const dpRole      = document.getElementById("dp-role");
-  const dpText      = document.getElementById("dp-text");
-
+  // ── Drive image URL ───────────────────────────────────
   function driveImgUrl(shareUrl) {
     const m = shareUrl.match(/\/d\/([^/?]+)/);
     if (!m) return shareUrl;
     return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
   }
 
-  function showDetail(row) {
-    dpName.textContent = row.name ?? "";
-    dpType.textContent = row.type ?? "";
-    dpRole.textContent = row.role ?? "";
-    dpText.textContent = row.text ?? "";
-    if (row.img) {
-      dpImg.src = driveImgUrl(row.img);
-      dpImgWrap.style.display = "block";
-    } else {
-      dpImg.src = "";
-      dpImgWrap.style.display = "none";
-    }
-    detailPanel.classList.add("visible");
-  }
-
-  document.getElementById("dp-close").addEventListener("click", () => {
-    detailPanel.classList.remove("visible");
-  });
-
-  // ── CSV → name-cloud injection ────────────────────────────
-  function injectNameClouds(data) {
+  // ── CMS → editorial layout injection ─────────────────
+  function injectCMSEntries(data) {
     const byRole = {};
     data.forEach(row => {
       const role = row.role?.trim();
       const name = row.name?.trim();
       if (!role || !name) return;
-      (byRole[role] = byRole[role] || []).push({ name, row });
+      (byRole[role] = byRole[role] || []).push(row);
     });
 
     chapters.forEach(ch => {
-      const title = ch.querySelector("h2")?.textContent.trim().toLowerCase();
+      const title   = ch.querySelector("h2")?.textContent.trim().toLowerCase();
       const roleKey = Object.keys(byRole).find(r => r.toLowerCase() === title);
       if (!roleKey) return;
 
-      const cloud = document.createElement("div");
-      cloud.className = "name-cloud";
+      byRole[roleKey].forEach((row, i) => {
+        const entry = document.createElement("div");
+        // Alternate: 0 = text left / img right, 1 = img left / text right
+        entry.className = "cms-entry" + (i % 2 === 1 ? " alt" : "");
 
-      const placed  = [];
-      const MIN_GAP = 20; // minimum % distance between tag centres
+        // Text block
+        const textDiv = document.createElement("div");
+        textDiv.className = "cms-entry-text";
 
-      byRole[roleKey].forEach(({ name, row }) => {
-        const span = document.createElement("span");
-        span.className   = "name-tag";
-        span.textContent = name;
+        const nameEl = document.createElement("div");
+        nameEl.className = "cms-entry-name";
+        nameEl.textContent = row.name ?? "";
+        textDiv.appendChild(nameEl);
 
-        let top = 50, left = 50;
-        for (let attempt = 0; attempt < 40; attempt++) {
-          top  = +(Math.random() * 76 + 8).toFixed(2);
-          left = +(Math.random() * 76 + 8).toFixed(2);
-          const ok = placed.every(p => {
-            const dt = top - p.t, dl = left - p.l;
-            return Math.sqrt(dt * dt + dl * dl) >= MIN_GAP;
-          });
-          if (ok) break;
+        if (row.type) {
+          const typeEl = document.createElement("div");
+          typeEl.className = "cms-entry-type";
+          typeEl.textContent = row.type;
+          textDiv.appendChild(typeEl);
         }
-        placed.push({ t: top, l: left });
 
-        span.style.top  = top  + "%";
-        span.style.left = left + "%";
+        if (row.text) {
+          const bodyEl = document.createElement("div");
+          bodyEl.className = "cms-entry-body";
+          bodyEl.textContent = row.text;
+          textDiv.appendChild(bodyEl);
+        }
 
-        const bx = +(Math.random() * 10 - 5).toFixed(1);
-        const by = +(Math.random() * 8  - 4).toFixed(1);
-        span.style.setProperty("--bx", bx + "px");
-        span.style.setProperty("--by", by + "px");
+        // Image block
+        const imgWrap = document.createElement("div");
+        imgWrap.className = "cms-entry-img-wrap";
 
-        span.addEventListener("click", () => showDetail(row));
-        cloud.appendChild(span);
+        if (row.img) {
+          const img = document.createElement("img");
+          img.src = driveImgUrl(row.img);
+          img.alt = row.name ?? "";
+          img.loading = "lazy";
+          imgWrap.appendChild(img);
+        }
+
+        entry.appendChild(textDiv);
+        entry.appendChild(imgWrap);
+
+        ch.appendChild(entry);
       });
-
-      ch.appendChild(cloud);
     });
   }
 
-  loadGoogleSheetCSV().then(injectNameClouds).catch(e => console.warn("[CSV]", e));
+  loadGoogleSheetCSV().then(injectCMSEntries).catch(e => console.warn("[CSV]", e));
 
-  // ── Left-panel mouse → trail on right panel ──────────────
-  let leftPtrDown = false;
-  leftPanel.addEventListener('pointerdown', () => { leftPtrDown = true; });
-  document.addEventListener('pointerup',    () => { leftPtrDown = false; });
-  document.addEventListener('pointercancel',() => { leftPtrDown = false; });
-
-  leftPanel.addEventListener("mousemove", e => {
-    const lr = leftPanel.getBoundingClientRect();
-    const xPct    = (e.clientX - lr.left) / lr.width;
-    const yScroll = (e.clientY - lr.top + leftPanel.scrollTop) / leftPanel.scrollHeight;
-    cursorNearCMS = checkNearCMS(e.clientX, e.clientY);
-    cursorPct     = { x: xPct, yScroll };
-    if (!leftPtrDown) {
-      trailPts.push({ x: xPct, yScroll, nearCMS: cursorNearCMS });
-    }
-    if (!isPlaying) redrawTrail();
-  });
-
-  leftPanel.addEventListener("mouseleave", () => {
-    trailPts.push(null);
-    cursorPct     = null;
-    cursorNearCMS = false;
-    if (!isPlaying) redrawTrail();
-  });
-
-  // ── Intro animation ───────────────────────────────────────────
+  // ── Intro animation ───────────────────────────────────
   (async () => {
     await document.fonts.ready;
     const sleep = ms => new Promise(r => setTimeout(r, ms));
-
     const blink = async (els, times = 3, ms = 150) => {
       for (let i = 0; i < times; i++) {
         els.forEach(el => { el.style.opacity = '0'; }); await sleep(ms);
@@ -1019,10 +601,9 @@
     const introRight = document.getElementById('intro-right');
     const introText  = document.getElementById('intro-left-text');
 
-    // Phase 1: words appear one by one, each blinking in
     for (const word of ['CALCULATE', 'AVERAGE', 'ERROR', 'DATA']) {
       const el = document.createElement('div');
-      el.className   = 'intro-word';
+      el.className = 'intro-word';
       el.textContent = word;
       introRight.appendChild(el);
       await sleep(50);
@@ -1032,26 +613,20 @@
     }
 
     await sleep(1000);
-
-    // Phase 2: NOT LOCATION
     introRight.innerHTML = '';
     for (const word of ['NOT', 'LOCATION']) {
       const el = document.createElement('div');
-      el.className     = 'intro-word';
+      el.className = 'intro-word';
       el.style.opacity = '1';
-      el.textContent   = word;
+      el.textContent = word;
       introRight.appendChild(el);
     }
 
     await sleep(1200);
-
-    // Phase 3: text blinks × 3 — backgrounds stay solid
     const allText = [introText, ...introRight.querySelectorAll('.intro-word')];
     await blink(allText, 3, 150);
-
     await sleep(300);
 
-    // Phase 4: fade out → main site
     intro.style.transition = 'opacity 0.6s ease';
     intro.style.opacity    = '0';
     await sleep(600);
