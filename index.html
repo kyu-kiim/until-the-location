@@ -178,9 +178,12 @@
       max-width: 260px;
     }
 
-    /* Left: CMS entries invisible (keep layout space) */
+    /* Left: CMS entries invisible but fully clickable (opacity vs visibility) */
     #left-content .cms-entry {
-      visibility: hidden;
+      opacity: 0;
+      cursor: pointer;
+      position: relative;
+      z-index: 6;   /* above sticky chapter-header (z-index:5) */
     }
 
     /* ── Divider ── */
@@ -228,35 +231,22 @@
       background: transparent !important;
     }
 
-    /* Mirror: CMS entries — neon, no glow/hologram */
+    /* Mirror: CMS entries — neon, no glow */
     #mirror-inner .cms-entry {
       visibility: visible;
       border-top: 1px solid #0d1f10;
     }
-    #mirror-inner .cms-entry-text {
-      cursor: pointer;
-    }
-    /* Expand toggle indicator on name */
-    #mirror-inner .cms-entry-name::after {
-      content: ' ＋';
-      font-style: normal;
-      font-size: 0.65em;
-      color: rgba(0, 255, 65, 0.4);
-      letter-spacing: 0;
-      font-weight: normal;
-    }
-    #mirror-inner .cms-entry.expanded .cms-entry-name::after {
-      content: ' －';
-    }
-
     #mirror-inner .cms-entry-name {
       color: #00ff41;
+      text-shadow: none;
     }
     #mirror-inner .cms-entry-type {
       color: rgba(0, 255, 65, 0.5);
+      text-shadow: none;
     }
     #mirror-inner .cms-entry-body {
       color: #00ff41;
+      text-shadow: none;
     }
 
     /* Neon image overlay */
@@ -479,31 +469,26 @@
   // ── Image expand state ────────────────────────────────
   const expandedKeys = new Set();
 
+  // Called after mirror re-sync: re-applies expanded classes only (no click binding)
   function rebindMirrorExpand() {
     mirrorInner.querySelectorAll(".cms-entry[data-entry-key]").forEach(mirrorEntry => {
       const key = mirrorEntry.dataset.entryKey;
-
-      // Apply current expanded state
       mirrorEntry.classList.toggle("expanded", expandedKeys.has(key));
-
-      // Click on text block toggles image
-      const textBlock = mirrorEntry.querySelector(".cms-entry-text");
-      if (!textBlock) return;
-
-      textBlock.addEventListener("click", () => {
-        const isExpanded = expandedKeys.has(key);
-        if (isExpanded) {
-          expandedKeys.delete(key);
-        } else {
-          expandedKeys.add(key);
-        }
-        // Update mirror entry
-        mirrorEntry.classList.toggle("expanded", !isExpanded);
-        // Update left panel entry (invisible but keeps layout)
-        const leftEntry = leftContent.querySelector(`[data-entry-key="${key}"]`);
-        if (leftEntry) leftEntry.classList.toggle("expanded", !isExpanded);
-      });
     });
+  }
+
+  // Toggle expand — called from left panel clicks
+  function toggleExpand(key) {
+    const isExpanded = expandedKeys.has(key);
+    if (isExpanded) expandedKeys.delete(key); else expandedKeys.add(key);
+
+    // Update left entry
+    const leftEntry = leftContent.querySelector(`[data-entry-key="${key}"]`);
+    if (leftEntry) leftEntry.classList.toggle("expanded", !isExpanded);
+
+    // Update mirror entry
+    const mirrorEntry = mirrorInner.querySelector(`[data-entry-key="${key}"]`);
+    if (mirrorEntry) mirrorEntry.classList.toggle("expanded", !isExpanded);
   }
 
   // ── Draggable divider ─────────────────────────────────
@@ -552,30 +537,12 @@
     const x = cursorPos.xFrac * cursorCanvas.width;
     const y = cursorPos.yFrac * cursorCanvas.height;
 
-    // Outer ring
+    // Single outer ring only
     cCtx.beginPath();
     cCtx.arc(x, y, 22, 0, Math.PI * 2);
     cCtx.strokeStyle = "#00ff41";
     cCtx.lineWidth   = 1;
     cCtx.stroke();
-
-    // Inner ring
-    cCtx.beginPath();
-    cCtx.arc(x, y, 6, 0, Math.PI * 2);
-    cCtx.strokeStyle = "rgba(0,255,65,0.5)";
-    cCtx.lineWidth   = 1;
-    cCtx.stroke();
-
-    // Cross hairs (short ticks)
-    const tick = 5;
-    cCtx.strokeStyle = "#00ff41";
-    cCtx.lineWidth   = 1;
-    [[x, y - 28, x, y - 28 + tick],
-     [x, y + 28 - tick, x, y + 28],
-     [x - 28, y, x - 28 + tick, y],
-     [x + 28 - tick, y, x + 28, y]].forEach(([x1,y1,x2,y2]) => {
-      cCtx.beginPath(); cCtx.moveTo(x1, y1); cCtx.lineTo(x2, y2); cCtx.stroke();
-    });
   }
 
   new ResizeObserver(resizeCursorCanvas).observe(rightPanel);
@@ -664,9 +631,10 @@
         entry.className      = "cms-entry" + (i % 2 === 1 ? " alt" : "");
         entry.dataset.entryKey = `${ch.id}-${i}`;
 
-        // Text block
+        // Text block — click on left panel (transparent) toggles image
         const textDiv = document.createElement("div");
         textDiv.className = "cms-entry-text";
+        textDiv.addEventListener("click", () => toggleExpand(entry.dataset.entryKey));
 
         const nameEl = document.createElement("div");
         nameEl.className   = "cms-entry-name";
