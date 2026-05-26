@@ -304,6 +304,14 @@
       pointer-events: none;
     }
 
+    /* Trail canvas — mix-blend-mode:difference 로 아래 요소 반전 */
+    #trail-canvas {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      mix-blend-mode: difference;
+    }
+
     /* Cursor canvas */
     #cursor-canvas {
       position: absolute; inset: 0;
@@ -365,6 +373,7 @@
       #intro          { display: none !important; }
       #chapter-nav    { display: none !important; }
       #cursor-canvas  { display: none !important; }
+      #trail-canvas   { display: none !important; }
       #divider-handle { display: none !important; }
       .cms-expand-btn { display: none !important; }
 
@@ -529,6 +538,7 @@
   <div id="mirror-el">
     <div id="mirror-inner"></div>
   </div>
+  <canvas id="trail-canvas"></canvas>
   <canvas id="cursor-canvas"></canvas>
 </div>
 
@@ -661,10 +671,72 @@
   document.addEventListener("touchend", () => { dragging = false; });
   leftPanel.style.width = "50vw";
 
-  // ── Neon cursor ring on right panel ───────────────────
+  // ── Trail canvas (픽셀 경로 → difference 반전) ─────────
+  const trailCanvas = document.getElementById("trail-canvas");
+  const tCtx        = trailCanvas.getContext("2d");
+  const trailPts    = [];          // {x:0-1, yScroll:0-1} | null(펜 올림)
+  const PIXEL = 3, BRUSH = 12;    // 픽셀 그리드 & 브러시 크기
+
+  // 스크롤-보상 Y: 저장된 scroll-fraction → 현재 캔버스 px
+  function trailScrollY(yScroll) {
+    return (yScroll * leftPanel.scrollHeight - leftPanel.scrollTop)
+           / leftPanel.clientHeight * trailCanvas.height;
+  }
+
+  function pixelLine(x0, y0, x1, y1) {
+    x0 = Math.round(x0 / PIXEL) * PIXEL;
+    y0 = Math.round(y0 / PIXEL) * PIXEL;
+    x1 = Math.round(x1 / PIXEL) * PIXEL;
+    y1 = Math.round(y1 / PIXEL) * PIXEL;
+    const dx = Math.abs(x1 - x0), sx = x0 < x1 ? PIXEL : -PIXEL;
+    const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? PIXEL : -PIXEL;
+    const half = (BRUSH - PIXEL) >> 1;
+    let err = dx + dy;
+    while (true) {
+      tCtx.fillRect(x0 - half, y0 - half, BRUSH, BRUSH);
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = 2 * err;
+      if (e2 >= dy) { err += dy; x0 += sx; }
+      if (e2 <= dx) { err += dx; y0 += sy; }
+    }
+  }
+
+  function redrawTrail() {
+    const w = trailCanvas.width, h = trailCanvas.height;
+    tCtx.clearRect(0, 0, w, h);
+    tCtx.fillStyle = "#00ff41";
+    const half = (BRUSH - PIXEL) >> 1;
+    let prev = null;
+    for (const pt of trailPts) {
+      if (!pt) { prev = null; continue; }
+      const x = pt.x * w;
+      const y = trailScrollY(pt.yScroll);
+      if (prev) {
+        pixelLine(prev.x * w, trailScrollY(prev.yScroll), x, y);
+      } else {
+        tCtx.fillRect(
+          Math.round(x / PIXEL) * PIXEL - half,
+          Math.round(y / PIXEL) * PIXEL - half,
+          BRUSH, BRUSH
+        );
+      }
+      prev = pt;
+    }
+  }
+
+  function resizeTrailCanvas() {
+    trailCanvas.width  = rightPanel.clientWidth;
+    trailCanvas.height = rightPanel.clientHeight;
+    redrawTrail();
+  }
+
+  // 스크롤 시 trail 위치 재계산
+  leftPanel.addEventListener("scroll", redrawTrail);
+
+  // ── Cursor ring ───────────────────────────────────────
   const cursorCanvas = document.getElementById("cursor-canvas");
   const cCtx         = cursorCanvas.getContext("2d");
-  let   cursorClient = null;   // raw viewport coords
+  let   cursorClient = null;
 
   function resizeCursorCanvas() {
     cursorCanvas.width  = rightPanel.clientWidth;
@@ -675,14 +747,9 @@
   function drawNeonCursor() {
     cCtx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
     if (!cursorClient) return;
-
-    // Recalculate fresh each draw — handles divider resize correctly
     const lr = leftPanel.getBoundingClientRect();
-    // X: map left-panel fraction → canvas width
     const cx = ((cursorClient.x - lr.left) / lr.width) * cursorCanvas.width;
-    // Y: canvas top === viewport top, no offset needed
     const cy = cursorClient.y;
-
     cCtx.beginPath();
     cCtx.arc(cx, cy, 22, 0, Math.PI * 2);
     cCtx.strokeStyle = "#00ff41";
@@ -690,15 +757,27 @@
     cCtx.stroke();
   }
 
-  new ResizeObserver(resizeCursorCanvas).observe(rightPanel);
+  new ResizeObserver(e => { resizeTrailCanvas(); resizeCursorCanvas(); }).observe(rightPanel);
+  resizeTrailCanvas();
   resizeCursorCanvas();
 
   leftPanel.addEventListener("mousemove", e => {
+    const lr      = leftPanel.getBoundingClientRect();
+    const xFrac   = (e.clientX - lr.left) / lr.width;
+    const yScroll = (e.clientY - lr.top + leftPanel.scrollTop) / leftPanel.scrollHeight;
+
+    trailPts.push({ x: xFrac, yScroll });
+    if (trailPts.length > 4000) trailPts.splice(0, 500); // 메모리 제한
+
     cursorClient = { x: e.clientX, y: e.clientY };
+    redrawTrail();
     drawNeonCursor();
   });
+
   leftPanel.addEventListener("mouseleave", () => {
+    trailPts.push(null); // 펜 올림
     cursorClient = null;
+    redrawTrail();
     drawNeonCursor();
   });
 
