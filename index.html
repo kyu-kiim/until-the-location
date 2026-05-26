@@ -25,7 +25,7 @@
     }
     body { display: flex; flex-direction: row; }
 
-    /* ── Left panel ──────────────────────────────────── */
+    /* ── Left panel ── */
     #left {
       height: 100%;
       overflow-y: auto; overflow-x: hidden;
@@ -117,6 +117,8 @@
       color: #222;
       max-width: 680px;
       margin: 0 auto 2em;
+      text-align: left;
+      hyphens: none;
     }
     .chapter p:last-child { margin-bottom: 0; }
 
@@ -129,7 +131,6 @@
       border-top: 1px solid #e8e8e8;
     }
     .cms-entry:last-child { padding-bottom: 80px; }
-    /* Alternate: even entries flip image/text */
     .cms-entry.alt { flex-direction: row-reverse; }
 
     .cms-entry-text { flex: 1; min-width: 0; }
@@ -141,6 +142,7 @@
       line-height: 1.15;
       color: #111;
       margin-bottom: 5px;
+      hyphens: none;
     }
     .cms-entry-type {
       font-family: 'AffairsTest', serif;
@@ -148,26 +150,35 @@
       font-size: 0.82rem;
       color: #999;
       margin-bottom: 18px;
+      hyphens: none;
     }
     .cms-entry-body {
       font-family: 'AffairsTest', serif;
       font-size: clamp(0.82rem, 1.05vw, 0.98rem);
       line-height: 1.9;
       color: #333;
-      text-align: justify;
+      text-align: left;
+      hyphens: none;
     }
 
+    /* Image: collapsed by default, expands on .expanded */
     .cms-entry-img-wrap {
-      width: 44%;
       flex-shrink: 0;
+      overflow: hidden;
+      max-width: 0;
+      transition: max-width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .cms-entry-img-wrap img {
-      width: 100%;
+      width: 260px;
+      max-width: none;
       height: auto;
       display: block;
     }
+    .cms-entry.expanded .cms-entry-img-wrap {
+      max-width: 260px;
+    }
 
-    /* Left: CMS entries are invisible (keep layout space) */
+    /* Left: CMS entries invisible (keep layout space) */
     #left-content .cms-entry {
       visibility: hidden;
     }
@@ -195,43 +206,57 @@
       position: relative; overflow: hidden;
     }
 
-    /* Neon mirror */
+    /* Neon mirror — interactive */
     #mirror-el {
       position: absolute; inset: 0;
-      overflow: hidden; pointer-events: none;
+      overflow: hidden;
       background: #000;
+      z-index: 0;
     }
     #mirror-inner {
       position: absolute; left: 0; right: 0;
       padding: 0 32px;
     }
 
-    /* Mirror: hide chapter nav dots if leaked */
+    /* Mirror: suppress chapter nav */
     #mirror-inner #chapter-nav { display: none; }
 
-    /* Mirror: chapter header takes space but is invisible */
+    /* Mirror: chapter header invisible but takes space */
     #mirror-inner .chapter-header {
       position: static !important;
       visibility: hidden;
       background: transparent !important;
     }
 
-    /* Mirror: show CMS entries with neon */
+    /* Mirror: CMS entries — neon, no glow/hologram */
     #mirror-inner .cms-entry {
       visibility: visible;
       border-top: 1px solid #0d1f10;
     }
+    #mirror-inner .cms-entry-text {
+      cursor: pointer;
+    }
+    /* Expand toggle indicator on name */
+    #mirror-inner .cms-entry-name::after {
+      content: ' ＋';
+      font-style: normal;
+      font-size: 0.65em;
+      color: rgba(0, 255, 65, 0.4);
+      letter-spacing: 0;
+      font-weight: normal;
+    }
+    #mirror-inner .cms-entry.expanded .cms-entry-name::after {
+      content: ' －';
+    }
+
     #mirror-inner .cms-entry-name {
       color: #00ff41;
-      text-shadow: 0 0 6px #00ff41, 0 0 18px #00ff41, 0 0 45px rgba(0,255,65,0.6);
     }
     #mirror-inner .cms-entry-type {
-      color: rgba(0,255,65,0.55);
-      text-shadow: 0 0 5px rgba(0,255,65,0.5);
+      color: rgba(0, 255, 65, 0.5);
     }
     #mirror-inner .cms-entry-body {
       color: #00ff41;
-      text-shadow: 0 0 4px rgba(0,255,65,0.8), 0 0 14px rgba(0,255,65,0.35);
     }
 
     /* Neon image overlay */
@@ -245,10 +270,17 @@
     #mirror-inner .cms-entry-img-wrap::after {
       content: '';
       position: absolute; inset: 0;
-      background: rgba(0, 255, 65, 0.18);
+      background: rgba(0, 255, 65, 0.15);
       mix-blend-mode: screen;
       pointer-events: none;
-      box-shadow: inset 0 0 40px rgba(0,255,65,0.25);
+      box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.2);
+    }
+
+    /* Cursor canvas */
+    #cursor-canvas {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      z-index: 10;
     }
 
     /* ── Intro ── */
@@ -281,20 +313,18 @@
 </head>
 <body>
 
-<!-- ── Intro ─────────────────────────────────────────── -->
+<!-- ── Intro ── -->
 <div id="intro">
   <div id="intro-left"><div id="intro-left-text">GPS<br>IS...</div></div>
   <div id="intro-right"></div>
 </div>
 
-<!-- ── Left panel ───────────────────────────────────── -->
+<!-- ── Left panel ── -->
 <div id="left">
-
   <div id="chapter-nav">
     <div id="nav-line"></div>
     <div id="scroll-indicator"></div>
   </div>
-
   <div id="left-content">
 
     <div class="chapter" id="ch-0">
@@ -356,16 +386,17 @@
   </div>
 </div>
 
-<!-- ── Divider ────────────────────────────────────────── -->
+<!-- ── Divider ── -->
 <div id="divider">
   <div id="divider-handle"></div>
 </div>
 
-<!-- ── Right panel ───────────────────────────────────── -->
+<!-- ── Right panel ── -->
 <div id="right">
   <div id="mirror-el">
     <div id="mirror-inner"></div>
   </div>
+  <canvas id="cursor-canvas"></canvas>
 </div>
 
 <script>
@@ -402,7 +433,7 @@
     });
   }
   positionDots();
-  window.addEventListener("resize", () => { positionDots(); updateScrollIndicator(); });
+  window.addEventListener("resize", () => { positionDots(); updateScrollIndicator(); resizeCursorCanvas(); });
 
   // ── Scroll indicator ──────────────────────────────────
   const scrollIndicator = document.getElementById("scroll-indicator");
@@ -437,12 +468,43 @@
   function syncMirrorContent() {
     mirrorInner.innerHTML = leftContent.innerHTML;
     syncMirrorScroll();
+    rebindMirrorExpand();
   }
 
   leftPanel.addEventListener("scroll", syncMirrorScroll);
   new MutationObserver(syncMirrorContent)
     .observe(leftContent, { childList: true, subtree: true });
   syncMirrorContent();
+
+  // ── Image expand state ────────────────────────────────
+  const expandedKeys = new Set();
+
+  function rebindMirrorExpand() {
+    mirrorInner.querySelectorAll(".cms-entry[data-entry-key]").forEach(mirrorEntry => {
+      const key = mirrorEntry.dataset.entryKey;
+
+      // Apply current expanded state
+      mirrorEntry.classList.toggle("expanded", expandedKeys.has(key));
+
+      // Click on text block toggles image
+      const textBlock = mirrorEntry.querySelector(".cms-entry-text");
+      if (!textBlock) return;
+
+      textBlock.addEventListener("click", () => {
+        const isExpanded = expandedKeys.has(key);
+        if (isExpanded) {
+          expandedKeys.delete(key);
+        } else {
+          expandedKeys.add(key);
+        }
+        // Update mirror entry
+        mirrorEntry.classList.toggle("expanded", !isExpanded);
+        // Update left panel entry (invisible but keeps layout)
+        const leftEntry = leftContent.querySelector(`[data-entry-key="${key}"]`);
+        if (leftEntry) leftEntry.classList.toggle("expanded", !isExpanded);
+      });
+    });
+  }
 
   // ── Draggable divider ─────────────────────────────────
   let dragging = false;
@@ -471,6 +533,67 @@
   }, { passive: true });
   document.addEventListener("touchend", () => { dragging = false; });
   leftPanel.style.width = "50vw";
+
+  // ── Neon cursor on right panel ────────────────────────
+  const cursorCanvas = document.getElementById("cursor-canvas");
+  const cCtx         = cursorCanvas.getContext("2d");
+  let   cursorPos    = null;
+
+  function resizeCursorCanvas() {
+    cursorCanvas.width  = rightPanel.clientWidth;
+    cursorCanvas.height = rightPanel.clientHeight;
+    drawNeonCursor();
+  }
+
+  function drawNeonCursor() {
+    cCtx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
+    if (!cursorPos) return;
+
+    const x = cursorPos.xFrac * cursorCanvas.width;
+    const y = cursorPos.yFrac * cursorCanvas.height;
+
+    // Outer ring
+    cCtx.beginPath();
+    cCtx.arc(x, y, 22, 0, Math.PI * 2);
+    cCtx.strokeStyle = "#00ff41";
+    cCtx.lineWidth   = 1;
+    cCtx.stroke();
+
+    // Inner ring
+    cCtx.beginPath();
+    cCtx.arc(x, y, 6, 0, Math.PI * 2);
+    cCtx.strokeStyle = "rgba(0,255,65,0.5)";
+    cCtx.lineWidth   = 1;
+    cCtx.stroke();
+
+    // Cross hairs (short ticks)
+    const tick = 5;
+    cCtx.strokeStyle = "#00ff41";
+    cCtx.lineWidth   = 1;
+    [[x, y - 28, x, y - 28 + tick],
+     [x, y + 28 - tick, x, y + 28],
+     [x - 28, y, x - 28 + tick, y],
+     [x + 28 - tick, y, x + 28, y]].forEach(([x1,y1,x2,y2]) => {
+      cCtx.beginPath(); cCtx.moveTo(x1, y1); cCtx.lineTo(x2, y2); cCtx.stroke();
+    });
+  }
+
+  new ResizeObserver(resizeCursorCanvas).observe(rightPanel);
+  resizeCursorCanvas();
+
+  leftPanel.addEventListener("mousemove", e => {
+    const lr = leftPanel.getBoundingClientRect();
+    cursorPos = {
+      xFrac: (e.clientX - lr.left) / lr.width,
+      yFrac: (e.clientY - lr.top)  / lr.height
+    };
+    drawNeonCursor();
+  });
+
+  leftPanel.addEventListener("mouseleave", () => {
+    cursorPos = null;
+    drawNeonCursor();
+  });
 
   // ── CSV parser ────────────────────────────────────────
   let csvData = null;
@@ -538,46 +661,45 @@
 
       byRole[roleKey].forEach((row, i) => {
         const entry = document.createElement("div");
-        // Alternate: 0 = text left / img right, 1 = img left / text right
-        entry.className = "cms-entry" + (i % 2 === 1 ? " alt" : "");
+        entry.className      = "cms-entry" + (i % 2 === 1 ? " alt" : "");
+        entry.dataset.entryKey = `${ch.id}-${i}`;
 
         // Text block
         const textDiv = document.createElement("div");
         textDiv.className = "cms-entry-text";
 
         const nameEl = document.createElement("div");
-        nameEl.className = "cms-entry-name";
+        nameEl.className   = "cms-entry-name";
         nameEl.textContent = row.name ?? "";
         textDiv.appendChild(nameEl);
 
         if (row.type) {
           const typeEl = document.createElement("div");
-          typeEl.className = "cms-entry-type";
+          typeEl.className   = "cms-entry-type";
           typeEl.textContent = row.type;
           textDiv.appendChild(typeEl);
         }
 
         if (row.text) {
           const bodyEl = document.createElement("div");
-          bodyEl.className = "cms-entry-body";
+          bodyEl.className   = "cms-entry-body";
           bodyEl.textContent = row.text;
           textDiv.appendChild(bodyEl);
         }
 
-        // Image block
-        const imgWrap = document.createElement("div");
-        imgWrap.className = "cms-entry-img-wrap";
+        entry.appendChild(textDiv);
 
+        // Image block — only if image exists
         if (row.img) {
+          const imgWrap = document.createElement("div");
+          imgWrap.className = "cms-entry-img-wrap";
           const img = document.createElement("img");
-          img.src = driveImgUrl(row.img);
-          img.alt = row.name ?? "";
+          img.src     = driveImgUrl(row.img);
+          img.alt     = row.name ?? "";
           img.loading = "lazy";
           imgWrap.appendChild(img);
+          entry.appendChild(imgWrap);
         }
-
-        entry.appendChild(textDiv);
-        entry.appendChild(imgWrap);
 
         ch.appendChild(entry);
       });
@@ -603,7 +725,7 @@
 
     for (const word of ['CALCULATE', 'AVERAGE', 'ERROR', 'DATA']) {
       const el = document.createElement('div');
-      el.className = 'intro-word';
+      el.className   = 'intro-word';
       el.textContent = word;
       introRight.appendChild(el);
       await sleep(50);
@@ -616,9 +738,9 @@
     introRight.innerHTML = '';
     for (const word of ['NOT', 'LOCATION']) {
       const el = document.createElement('div');
-      el.className = 'intro-word';
+      el.className     = 'intro-word';
       el.style.opacity = '1';
-      el.textContent = word;
+      el.textContent   = word;
       introRight.appendChild(el);
     }
 
