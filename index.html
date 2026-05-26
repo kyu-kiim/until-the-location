@@ -125,65 +125,96 @@
     /* ── CMS Editorial entries ── */
     .cms-entry {
       display: flex;
-      gap: 32px;
-      padding: 56px 0;
-      align-items: flex-start;
-      border-top: 1px solid #e8e8e8;
+      flex-direction: column;
+      align-items: flex-start;   /* title + btn left-aligned */
+      padding: 48px 0;
+      /* no border */
+    }
+    .cms-entry.alt {
+      align-items: flex-end;     /* title + btn right-aligned */
     }
     .cms-entry:last-child { padding-bottom: 80px; }
-    .cms-entry.alt { flex-direction: row-reverse; }
 
-    .cms-entry-text { flex: 1; min-width: 0; }
-
+    /* Title — same size as body text */
     .cms-entry-name {
       font-family: 'AffairsTest', serif;
-      font-size: clamp(1.05rem, 1.5vw, 1.4rem);
+      font-size: clamp(0.82rem, 1.05vw, 0.98rem);
       font-weight: bold;
-      line-height: 1.15;
+      line-height: 1.4;
       color: #111;
-      margin-bottom: 5px;
       hyphens: none;
+      margin-bottom: 4px;
     }
+
+    /* Italic subtitle */
     .cms-entry-type {
       font-family: 'AffairsTest', serif;
       font-style: italic;
-      font-size: 0.82rem;
-      color: #999;
-      margin-bottom: 18px;
+      font-size: 0.78rem;
+      color: #bbb;
       hyphens: none;
+      margin-bottom: 10px;
     }
+
+    /* Rectangular expand button — below title, left/right per alt */
+    .cms-expand-btn {
+      display: block;
+      width: 28px;
+      height: 16px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Image: expands top → bottom, instant */
+    .cms-entry-img-wrap {
+      align-self: stretch;
+      overflow: hidden;
+      max-height: 0;
+      transition: none;
+    }
+    .cms-entry-img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .cms-entry.expanded .cms-entry-img-wrap {
+      max-height: 9999px;
+    }
+
+    /* Body text */
     .cms-entry-body {
+      align-self: stretch;
       font-family: 'AffairsTest', serif;
       font-size: clamp(0.82rem, 1.05vw, 0.98rem);
       line-height: 1.9;
       color: #333;
       text-align: left;
       hyphens: none;
+      margin-top: 14px;
     }
 
-    /* Image: collapsed by default, expands on .expanded */
-    .cms-entry-img-wrap {
-      flex-shrink: 0;
-      overflow: hidden;
-      max-width: 0;
-      transition: max-width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .cms-entry-img-wrap img {
-      width: 260px;
-      max-width: none;
-      height: auto;
-      display: block;
-    }
-    .cms-entry.expanded .cms-entry-img-wrap {
-      max-width: 260px;
-    }
-
-    /* Left: CMS entries invisible but fully clickable (opacity vs visibility) */
+    /* Left: hide everything except the expand button */
     #left-content .cms-entry {
-      opacity: 0;
-      cursor: pointer;
       position: relative;
-      z-index: 6;   /* above sticky chapter-header (z-index:5) */
+      z-index: 6;
+    }
+    #left-content .cms-entry-name,
+    #left-content .cms-entry-type,
+    #left-content .cms-entry-img-wrap,
+    #left-content .cms-entry-body {
+      visibility: hidden;
+    }
+    /* Button stays visible — visibility:hidden on parent can be overridden by child */
+    #left-content .cms-expand-btn {
+      visibility: visible;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+    #left-content .cms-entry.expanded .cms-expand-btn {
+      background: rgba(0, 0, 0, 0.06);
     }
 
     /* ── Divider ── */
@@ -209,39 +240,37 @@
       position: relative; overflow: hidden;
     }
 
-    /* Neon mirror — interactive */
+    /* Neon mirror */
     #mirror-el {
       position: absolute; inset: 0;
       overflow: hidden;
       background: #000;
-      z-index: 0;
     }
     #mirror-inner {
       position: absolute; left: 0; right: 0;
       padding: 0 32px;
     }
 
-    /* Mirror: suppress chapter nav */
+    /* Mirror: suppress nav */
     #mirror-inner #chapter-nav { display: none; }
 
-    /* Mirror: chapter header invisible but takes space */
+    /* Mirror: chapter header invisible, space preserved */
     #mirror-inner .chapter-header {
       position: static !important;
       visibility: hidden;
       background: transparent !important;
     }
 
-    /* Mirror: CMS entries — neon, no glow */
+    /* Mirror: CMS entries — neon, no borders */
     #mirror-inner .cms-entry {
       visibility: visible;
-      border-top: 1px solid #0d1f10;
     }
     #mirror-inner .cms-entry-name {
-      color: #00ff41;
+      color: #fff;
       text-shadow: none;
     }
     #mirror-inner .cms-entry-type {
-      color: rgba(0, 255, 65, 0.5);
+      color: rgba(0, 255, 65, 0.45);
       text-shadow: none;
     }
     #mirror-inner .cms-entry-body {
@@ -249,7 +278,16 @@
       text-shadow: none;
     }
 
-    /* Neon image overlay */
+    /* Mirror: neon rectangle expand button */
+    #mirror-inner .cms-expand-btn {
+      border: 1px solid #00ff41;
+      cursor: default;
+    }
+    #mirror-inner .cms-entry.expanded .cms-expand-btn {
+      background: rgba(0, 255, 65, 0.1);
+    }
+
+    /* Mirror: neon image overlay */
     #mirror-inner .cms-entry-img-wrap {
       position: relative;
     }
@@ -260,10 +298,9 @@
     #mirror-inner .cms-entry-img-wrap::after {
       content: '';
       position: absolute; inset: 0;
-      background: rgba(0, 255, 65, 0.15);
+      background: rgba(0, 255, 65, 0.13);
       mix-blend-mode: screen;
       pointer-events: none;
-      box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.2);
     }
 
     /* Cursor canvas */
@@ -423,7 +460,11 @@
     });
   }
   positionDots();
-  window.addEventListener("resize", () => { positionDots(); updateScrollIndicator(); resizeCursorCanvas(); });
+  window.addEventListener("resize", () => {
+    positionDots();
+    updateScrollIndicator();
+    resizeCursorCanvas();
+  });
 
   // ── Scroll indicator ──────────────────────────────────
   const scrollIndicator = document.getElementById("scroll-indicator");
@@ -432,8 +473,7 @@
     const maxScroll = leftPanel.scrollHeight - leftPanel.clientHeight;
     const ratio     = maxScroll > 0 ? leftPanel.scrollTop / maxScroll : 0;
     const navH      = window.innerHeight;
-    const top       = 40 + ratio * (navH - 80);
-    scrollIndicator.style.top = top + "px";
+    scrollIndicator.style.top = (40 + ratio * (navH - 80)) + "px";
   }
 
   function updateActiveDot() {
@@ -458,7 +498,7 @@
   function syncMirrorContent() {
     mirrorInner.innerHTML = leftContent.innerHTML;
     syncMirrorScroll();
-    rebindMirrorExpand();
+    applyExpandedToMirror();
   }
 
   leftPanel.addEventListener("scroll", syncMirrorScroll);
@@ -469,25 +509,21 @@
   // ── Image expand state ────────────────────────────────
   const expandedKeys = new Set();
 
-  // Called after mirror re-sync: re-applies expanded classes only (no click binding)
-  function rebindMirrorExpand() {
-    mirrorInner.querySelectorAll(".cms-entry[data-entry-key]").forEach(mirrorEntry => {
-      const key = mirrorEntry.dataset.entryKey;
-      mirrorEntry.classList.toggle("expanded", expandedKeys.has(key));
+  // Re-apply expanded classes to mirror after sync
+  function applyExpandedToMirror() {
+    mirrorInner.querySelectorAll(".cms-entry[data-entry-key]").forEach(el => {
+      el.classList.toggle("expanded", expandedKeys.has(el.dataset.entryKey));
     });
   }
 
-  // Toggle expand — called from left panel clicks
+  // Toggle expand — called from left panel button click
   function toggleExpand(key) {
     const isExpanded = expandedKeys.has(key);
-    if (isExpanded) expandedKeys.delete(key); else expandedKeys.add(key);
+    isExpanded ? expandedKeys.delete(key) : expandedKeys.add(key);
 
-    // Update left entry
-    const leftEntry = leftContent.querySelector(`[data-entry-key="${key}"]`);
-    if (leftEntry) leftEntry.classList.toggle("expanded", !isExpanded);
-
-    // Update mirror entry
+    const leftEntry   = leftContent.querySelector(`[data-entry-key="${key}"]`);
     const mirrorEntry = mirrorInner.querySelector(`[data-entry-key="${key}"]`);
+    if (leftEntry)   leftEntry.classList.toggle("expanded",   !isExpanded);
     if (mirrorEntry) mirrorEntry.classList.toggle("expanded", !isExpanded);
   }
 
@@ -495,7 +531,7 @@
   let dragging = false;
   divider.addEventListener("mousedown", e => {
     dragging = true;
-    document.body.style.cursor = "col-resize";
+    document.body.style.cursor     = "col-resize";
     document.body.style.userSelect = "none";
     e.preventDefault();
   });
@@ -507,7 +543,7 @@
   document.addEventListener("mouseup", () => {
     if (!dragging) return;
     dragging = false;
-    document.body.style.cursor = "";
+    document.body.style.cursor     = "";
     document.body.style.userSelect = "";
   });
   divider.addEventListener("touchstart", e => { dragging = true; e.preventDefault(); }, { passive: false });
@@ -519,7 +555,7 @@
   document.addEventListener("touchend", () => { dragging = false; });
   leftPanel.style.width = "50vw";
 
-  // ── Neon cursor on right panel ────────────────────────
+  // ── Neon cursor ring on right panel ───────────────────
   const cursorCanvas = document.getElementById("cursor-canvas");
   const cCtx         = cursorCanvas.getContext("2d");
   let   cursorPos    = null;
@@ -533,11 +569,8 @@
   function drawNeonCursor() {
     cCtx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
     if (!cursorPos) return;
-
     const x = cursorPos.xFrac * cursorCanvas.width;
     const y = cursorPos.yFrac * cursorCanvas.height;
-
-    // Single outer ring only
     cCtx.beginPath();
     cCtx.arc(x, y, 22, 0, Math.PI * 2);
     cCtx.strokeStyle = "#00ff41";
@@ -549,14 +582,13 @@
   resizeCursorCanvas();
 
   leftPanel.addEventListener("mousemove", e => {
-    const lr = leftPanel.getBoundingClientRect();
+    const lr  = leftPanel.getBoundingClientRect();
     cursorPos = {
       xFrac: (e.clientX - lr.left) / lr.width,
       yFrac: (e.clientY - lr.top)  / lr.height
     };
     drawNeonCursor();
   });
-
   leftPanel.addEventListener("mouseleave", () => {
     cursorPos = null;
     drawNeonCursor();
@@ -591,9 +623,9 @@
 
   async function loadGoogleSheetCSV(url = SHEET_CSV_URL) {
     const proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-    const res = await fetch(proxy);
+    const res   = await fetch(proxy);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const rows = parseCSV(await res.text());
+    const rows    = parseCSV(await res.text());
     const headers = rows[0].map(h => h.trim());
     csvData = rows.slice(1).map(row =>
       Object.fromEntries(headers.map((h, i) => [h, (row[i] ?? "").trim()]))
@@ -627,38 +659,38 @@
       if (!roleKey) return;
 
       byRole[roleKey].forEach((row, i) => {
+        const key   = `${ch.id}-${i}`;
         const entry = document.createElement("div");
-        entry.className      = "cms-entry" + (i % 2 === 1 ? " alt" : "");
-        entry.dataset.entryKey = `${ch.id}-${i}`;
+        // Alternate: even = left-aligned, odd = right-aligned
+        entry.className       = "cms-entry" + (i % 2 === 1 ? " alt" : "");
+        entry.dataset.entryKey = key;
 
-        // Text block — click on left panel (transparent) toggles image
-        const textDiv = document.createElement("div");
-        textDiv.className = "cms-entry-text";
-        textDiv.addEventListener("click", () => toggleExpand(entry.dataset.entryKey));
-
+        // ① Name (title)
         const nameEl = document.createElement("div");
         nameEl.className   = "cms-entry-name";
         nameEl.textContent = row.name ?? "";
-        textDiv.appendChild(nameEl);
+        entry.appendChild(nameEl);
 
+        // ② Italic type
         if (row.type) {
           const typeEl = document.createElement("div");
           typeEl.className   = "cms-entry-type";
           typeEl.textContent = row.type;
-          textDiv.appendChild(typeEl);
+          entry.appendChild(typeEl);
         }
 
-        if (row.text) {
-          const bodyEl = document.createElement("div");
-          bodyEl.className   = "cms-entry-body";
-          bodyEl.textContent = row.text;
-          textDiv.appendChild(bodyEl);
-        }
-
-        entry.appendChild(textDiv);
-
-        // Image block — only if image exists
+        // ③ Expand button (rectangular, visible on left as hint)
         if (row.img) {
+          const btn = document.createElement("button");
+          btn.className = "cms-expand-btn";
+          btn.setAttribute("aria-label", "expand image");
+          btn.addEventListener("click", e => {
+            e.stopPropagation();
+            toggleExpand(key);
+          });
+          entry.appendChild(btn);
+
+          // ④ Image (expands top → bottom)
           const imgWrap = document.createElement("div");
           imgWrap.className = "cms-entry-img-wrap";
           const img = document.createElement("img");
@@ -667,6 +699,14 @@
           img.loading = "lazy";
           imgWrap.appendChild(img);
           entry.appendChild(imgWrap);
+        }
+
+        // ⑤ Body text
+        if (row.text) {
+          const bodyEl = document.createElement("div");
+          bodyEl.className   = "cms-entry-body";
+          bodyEl.textContent = row.text;
+          entry.appendChild(bodyEl);
         }
 
         ch.appendChild(entry);
