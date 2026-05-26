@@ -137,7 +137,7 @@
 
     /* Title — same size as body text */
     .cms-entry-name {
-      font-family: 'AffairsTest', serif;
+      font-family: 'NeueHaasGrot', sans-serif;
       font-size: clamp(0.82rem, 1.05vw, 0.98rem);
       font-weight: bold;
       line-height: 1.4;
@@ -148,7 +148,7 @@
 
     /* Italic subtitle */
     .cms-entry-type {
-      font-family: 'AffairsTest', serif;
+      font-family: 'NeueHaasGrot', sans-serif;
       font-style: italic;
       font-size: 0.78rem;
       color: #bbb;
@@ -187,7 +187,7 @@
     /* Body text */
     .cms-entry-body {
       align-self: stretch;
-      font-family: 'AffairsTest', serif;
+      font-family: 'NeueHaasGrot', sans-serif;
       font-size: clamp(0.82rem, 1.05vw, 0.98rem);
       line-height: 1.9;
       color: #333;
@@ -207,14 +207,15 @@
     #left-content .cms-entry-body {
       visibility: hidden;
     }
-    /* Button stays visible — visibility:hidden on siblings, button explicitly visible */
+    /* Button: 네온 채움 */
     #left-content .cms-expand-btn {
-      visibility: hidden;
-      border: 1px solid #ccc;
+      visibility: visible;
+      background: #00ff41;
+      border: none;
       cursor: pointer;
     }
     #left-content .cms-entry.expanded .cms-expand-btn {
-      background: rgba(0, 0, 0, 0.06);
+      background: #00ff41;
     }
 
     /* ── Divider ── */
@@ -336,6 +337,111 @@
     }
     .intro-word { color: #00ff41; opacity: 0; }
     #intro-left-text { color: #000; }
+
+    /* ── Print: 양면 스프레드 110mm × 117mm ── */
+    @media print {
+      /* 배경색/이미지 강제 출력 */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* 스프레드 1장 = 좌 110mm + 우 110mm, 세로 117mm */
+      @page {
+        size: 220mm 117mm;
+        margin: 0;
+      }
+
+      html, body {
+        width: 220mm;
+        height: 117mm;
+        overflow: visible;
+        background: #000;
+      }
+
+      body { display: flex; flex-direction: row; }
+
+      /* ── 불필요 요소 제거 ── */
+      #intro          { display: none !important; }
+      #chapter-nav    { display: none !important; }
+      #cursor-canvas  { display: none !important; }
+      #divider-handle { display: none !important; }
+      .cms-expand-btn { display: none !important; }
+
+      /* ── 왼쪽 패널 (챕터 텍스트) ── */
+      #left {
+        width: 110mm !important;
+        height: 117mm;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #fff;
+        display: flex;
+        flex-direction: row;
+      }
+
+      #left-content {
+        flex: 1;
+        padding: 8mm;
+        overflow: hidden;
+      }
+
+      /* sticky 해제 */
+      .chapter-header {
+        position: static !important;
+        background: #fff !important;
+        padding: 6mm 0 3mm;
+      }
+
+      /* 왼쪽 CMS 항목은 print에서도 숨김 유지 */
+      #left-content .cms-entry         { display: none !important; }
+
+      /* ── 디바이더 ── */
+      #divider {
+        width: 0.5mm !important;
+        height: 117mm;
+        background: #00ff41 !important;
+        flex-shrink: 0;
+      }
+
+      /* ── 오른쪽 패널 (네온 CMS) ── */
+      #right {
+        flex: 1;
+        height: 117mm;
+        background: #000 !important;
+        position: relative;
+        overflow: hidden;
+      }
+
+      #mirror-el {
+        position: absolute !important;
+        inset: 0;
+        background: #000 !important;
+        overflow: hidden;
+      }
+
+      /* JS 인라인 top 값을 0으로 리셋 → 첫 챕터부터 출력 */
+      #mirror-inner {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0;
+        right: 0;
+        padding: 8mm;
+      }
+
+      /* 챕터 헤더는 오른쪽에서 완전 제거 (공간도 차지 안 함) */
+      #mirror-inner .chapter-header  { display: none !important; }
+
+      /* CMS 항목 표시 */
+      #mirror-inner .cms-entry        { visibility: visible !important; }
+      #mirror-inner .cms-entry-name   { color: #fff !important; }
+      #mirror-inner .cms-entry-type   { color: rgba(0,255,65,0.55) !important; }
+      #mirror-inner .cms-entry-body   { color: #00ff41 !important; }
+
+      /* 이미지: 네온 오버레이 제거, 필터 제거, 펼침 */
+      #mirror-inner .cms-entry-img-wrap::after { display: none !important; }
+      #mirror-inner .cms-entry-img-wrap img    { filter: none !important; }
+      .cms-entry-img-wrap                      { max-height: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -764,6 +870,18 @@
     await sleep(600);
     intro.remove();
   })();
+
+  // ── Print: 스크롤 리셋 → 복원 ────────────────────────
+  let _printScroll = 0;
+  window.addEventListener('beforeprint', () => {
+    _printScroll = leftPanel.scrollTop;
+    leftPanel.scrollTop = 0;
+    mirrorInner.style.top = '0px';
+  });
+  window.addEventListener('afterprint', () => {
+    leftPanel.scrollTop = _printScroll;
+    syncMirrorScroll();
+  });
 </script>
 
 </body>
