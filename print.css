@@ -9,13 +9,13 @@
 }
 
 html, body {
-  width: 220mm;
+  width: 110mm;
   height: 117mm;
   overflow: visible;
   background: #000;
 }
 
-body { display: flex; flex-direction: row; }
+body { display: block; }
 
 #intro          { display: none !important; }
 #chapter-nav    { display: none !important; }
@@ -28,10 +28,11 @@ body { display: flex; flex-direction: row; }
   width: 110mm !important;
   height: 117mm;
   overflow: hidden;
-  flex-shrink: 0;
   background: #fff;
   display: flex;
   flex-direction: row;
+  break-after: page;
+  page-break-after: always;
 }
 
 #left-content {
@@ -48,15 +49,10 @@ body { display: flex; flex-direction: row; }
 
 #left-content .cms-entry { display: none !important; }
 
-#divider {
-  width: 0.5mm !important;
-  height: 117mm;
-  background: #00ff41 !important;
-  flex-shrink: 0;
-}
+#divider { display: none !important; }
 
 #right {
-  flex: 1;
+  width: 110mm;
   height: 117mm;
   background: #000 !important;
   position: relative;
