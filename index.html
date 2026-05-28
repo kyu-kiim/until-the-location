@@ -530,27 +530,30 @@
     printRoot.id = 'print-root';
 
     chapters.forEach(ch => {
-      const h2 = ch.querySelector('h2');
+      const h2         = ch.querySelector('h2');
       const paragraphs = Array.from(ch.querySelectorAll('.chapter-header > p'));
       const chEntries  = cmsByChapter[ch.id] || [];
+      const count      = Math.max(paragraphs.length, chEntries.length);
 
-      paragraphs.forEach(p => {
+      for (let i = 0; i < count; i++) {
         const spread = document.createElement('div');
         spread.className = 'print-spread';
 
         const leftDiv = document.createElement('div');
         leftDiv.className = 'print-left';
-        if (h2) leftDiv.appendChild(h2.cloneNode(true));
-        leftDiv.appendChild(p.cloneNode(true));
+        if (paragraphs[i]) {
+          if (h2) leftDiv.appendChild(h2.cloneNode(true));
+          leftDiv.appendChild(paragraphs[i].cloneNode(true));
+        }
 
         const rightDiv = document.createElement('div');
         rightDiv.className = 'print-right';
-        chEntries.forEach(el => rightDiv.appendChild(el.cloneNode(true)));
+        if (chEntries[i]) rightDiv.appendChild(chEntries[i].cloneNode(true));
 
         spread.appendChild(leftDiv);
         spread.appendChild(rightDiv);
         printRoot.appendChild(spread);
-      });
+      }
     });
 
     // 현재 화면의 trail canvas를 캡처해서 각 print-right에 오버레이
