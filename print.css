@@ -21,7 +21,7 @@ body { display: flex; flex-direction: row; }
 #chapter-nav    { display: none !important; }
 #cursor-canvas  { display: none !important; }
 #divider-handle { display: none !important; }
-.cms-expand-btn { display: none !important; }
+#mirror-inner .cms-expand-btn { display: none !important; }
 
 #left {
   width: 110mm !important;
@@ -45,7 +45,6 @@ body { display: flex; flex-direction: row; }
   padding: 6mm 0 3mm;
 }
 
-#left-content .cms-entry { display: none !important; }
 
 #divider { display: none !important; }
 
