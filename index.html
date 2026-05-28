@@ -178,6 +178,7 @@
 
   // ── Image expand state ────────────────────────────────
   const expandedKeys = new Set();
+  const clickOrder   = [];  // entry keys in first-click order, no duplicates
 
   // Re-apply expanded classes to mirror after sync
   function applyExpandedToMirror() {
@@ -190,6 +191,8 @@
   function toggleExpand(key) {
     const isExpanded = expandedKeys.has(key);
     isExpanded ? expandedKeys.delete(key) : expandedKeys.add(key);
+
+    if (!clickOrder.includes(key)) clickOrder.push(key);
 
     const leftEntry   = leftContent.querySelector(`[data-entry-key="${key}"]`);
     const mirrorEntry = mirrorInner.querySelector(`[data-entry-key="${key}"]`);
@@ -504,16 +507,22 @@
     intro.remove();
   })();
 
-  // ── Print: 스크롤 리셋 → 복원 ────────────────────────
+  // ── Print: 클릭 순서로 재정렬 → 스크롤 리셋 → 복원 ──
   let _printScroll = 0;
   window.addEventListener('beforeprint', () => {
     _printScroll = leftPanel.scrollTop;
     leftPanel.scrollTop = 0;
     mirrorInner.style.top = '0px';
+
+    // 클릭한 항목을 순서대로 앞으로, 나머지는 원래 순서 유지
+    const all       = Array.from(mirrorInner.querySelectorAll('.cms-entry[data-entry-key]'));
+    const clicked   = clickOrder.map(k => all.find(el => el.dataset.entryKey === k)).filter(Boolean);
+    const unclicked = all.filter(el => !clickOrder.includes(el.dataset.entryKey));
+    [...clicked, ...unclicked].forEach(el => mirrorInner.appendChild(el));
   });
   window.addEventListener('afterprint', () => {
     leftPanel.scrollTop = _printScroll;
-    syncMirrorScroll();
+    syncMirrorContent();  // 원래 순서로 복원
   });
 </script>
 

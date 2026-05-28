@@ -20,7 +20,6 @@ body { display: flex; flex-direction: row; }
 #intro          { display: none !important; }
 #chapter-nav    { display: none !important; }
 #cursor-canvas  { display: none !important; }
-#trail-canvas   { display: none !important; }
 #divider-handle { display: none !important; }
 .cms-expand-btn { display: none !important; }
 
@@ -80,6 +79,4 @@ body { display: flex; flex-direction: row; }
 #mirror-inner .cms-entry-type   { color: rgba(0, 255, 65, 0.55) !important; }
 #mirror-inner .cms-entry-body   { color: #00ff41 !important; }
 
-#mirror-inner .cms-entry-img-wrap::after { display: none !important; }
-#mirror-inner .cms-entry-img-wrap img    { filter: none !important; }
-.cms-entry-img-wrap                      { max-height: none !important; }
+.cms-entry-img-wrap { max-height: none !important; }
