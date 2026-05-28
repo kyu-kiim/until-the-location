@@ -1,6 +1,6 @@
 @page {
-  size: 110mm 170mm;
-  margin: 0;
+  size: 220mm 170mm;
+  margin: 0mm;
 }
 
 * {
@@ -9,13 +9,13 @@
 }
 
 html, body {
-  width: 110mm;
+  width: 220mm;
   height: 170mm;
   overflow: visible;
   background: #000;
 }
 
-body { display: block; }
+body { display: flex; flex-direction: row; }
 
 #intro          { display: none !important; }
 #chapter-nav    { display: none !important; }
@@ -28,11 +28,10 @@ body { display: block; }
   width: 110mm !important;
   height: 170mm;
   overflow: hidden;
+  flex-shrink: 0;
   background: #fff;
   display: flex;
   flex-direction: row;
-  break-after: page;
-  page-break-after: always;
 }
 
 #left-content {
