@@ -258,18 +258,20 @@
     }
   }
 
-  function redrawTrail() {
+  function redrawTrailAtScroll(atScroll) {
     const w = trailCanvas.width, h = trailCanvas.height;
     tCtx.clearRect(0, 0, w, h);
     tCtx.fillStyle = "#00ff41";
     const half = (BRUSH - PIXEL) >> 1;
+    const toY = yScroll =>
+      (yScroll * leftPanel.scrollHeight - atScroll) / leftPanel.clientHeight * h;
     let prev = null;
     for (const pt of trailPts) {
       if (!pt) { prev = null; continue; }
       const x = pt.x * w;
-      const y = trailScrollY(pt.yScroll);
+      const y = toY(pt.yScroll);
       if (prev) {
-        pixelLine(prev.x * w, trailScrollY(prev.yScroll), x, y);
+        pixelLine(prev.x * w, toY(prev.yScroll), x, y);
       } else {
         tCtx.fillRect(
           Math.round(x / PIXEL) * PIXEL - half,
@@ -280,6 +282,8 @@
       prev = pt;
     }
   }
+
+  function redrawTrail() { redrawTrailAtScroll(leftPanel.scrollTop); }
 
   function resizeTrailCanvas() {
     trailCanvas.width  = rightPanel.clientWidth;
@@ -548,7 +552,16 @@
 
         const rightDiv = document.createElement('div');
         rightDiv.className = 'print-right';
-        if (chEntries[i]) rightDiv.appendChild(chEntries[i].cloneNode(true));
+        if (chEntries[i]) {
+          rightDiv.appendChild(chEntries[i].cloneNode(true));
+
+          // 이 CMS 항목이 있는 스크롤 위치 기준으로 trail 캡처
+          redrawTrailAtScroll(chEntries[i].offsetTop);
+          const trailImg = document.createElement('img');
+          trailImg.src = trailCanvas.toDataURL();
+          trailImg.className = 'print-trail-overlay';
+          rightDiv.appendChild(trailImg);
+        }
 
         spread.appendChild(leftDiv);
         spread.appendChild(rightDiv);
@@ -556,15 +569,7 @@
       }
     });
 
-    // 현재 화면의 trail canvas를 캡처해서 각 print-right에 오버레이
-    const trailDataUrl = trailCanvas.toDataURL();
-    printRoot.querySelectorAll('.print-right').forEach(rightDiv => {
-      const img = document.createElement('img');
-      img.src = trailDataUrl;
-      img.className = 'print-trail-overlay';
-      rightDiv.appendChild(img);
-    });
-
+    redrawTrail(); // trail canvas 현재 상태로 복원
     document.body.appendChild(printRoot);
   });
 
