@@ -553,6 +553,15 @@
       });
     });
 
+    // 현재 화면의 trail canvas를 캡처해서 각 print-right에 오버레이
+    const trailDataUrl = trailCanvas.toDataURL();
+    printRoot.querySelectorAll('.print-right').forEach(rightDiv => {
+      const img = document.createElement('img');
+      img.src = trailDataUrl;
+      img.className = 'print-trail-overlay';
+      rightDiv.appendChild(img);
+    });
+
     document.body.appendChild(printRoot);
   });
 
