@@ -507,22 +507,60 @@
     intro.remove();
   })();
 
-  // ── Print: 클릭 순서로 재정렬 → 스크롤 리셋 → 복원 ──
+  // ── Print: 문단별 스프레드 생성 ──────────────────────
   let _printScroll = 0;
   window.addEventListener('beforeprint', () => {
     _printScroll = leftPanel.scrollTop;
-    leftPanel.scrollTop = 0;
-    mirrorInner.style.top = '0px';
 
-    // 클릭한 항목을 순서대로 앞으로, 나머지는 원래 순서 유지
-    const all       = Array.from(mirrorInner.querySelectorAll('.cms-entry[data-entry-key]'));
-    const clicked   = clickOrder.map(k => all.find(el => el.dataset.entryKey === k)).filter(Boolean);
-    const unclicked = all.filter(el => !clickOrder.includes(el.dataset.entryKey));
-    [...clicked, ...unclicked].forEach(el => mirrorInner.appendChild(el));
+    // 클릭 순서로 mirror 항목 정렬
+    const allMirror = Array.from(mirrorInner.querySelectorAll('.cms-entry[data-entry-key]'));
+    const clicked   = clickOrder.map(k => allMirror.find(el => el.dataset.entryKey === k)).filter(Boolean);
+    const unclicked = allMirror.filter(el => !clickOrder.includes(el.dataset.entryKey));
+    const ordered   = [...clicked, ...unclicked];
+
+    // 챕터 id별로 CMS 항목 그룹핑 (entryKey: 'ch-0-0' → chId: 'ch-0')
+    const cmsByChapter = {};
+    ordered.forEach(el => {
+      const chId = el.dataset.entryKey.replace(/-\d+$/, '');
+      (cmsByChapter[chId] = cmsByChapter[chId] || []).push(el);
+    });
+
+    // 문단별 스프레드 생성
+    const printRoot = document.createElement('div');
+    printRoot.id = 'print-root';
+
+    chapters.forEach(ch => {
+      const h2 = ch.querySelector('h2');
+      const paragraphs = Array.from(ch.querySelectorAll('.chapter-header > p'));
+      const chEntries  = cmsByChapter[ch.id] || [];
+
+      paragraphs.forEach(p => {
+        const spread = document.createElement('div');
+        spread.className = 'print-spread';
+
+        const leftDiv = document.createElement('div');
+        leftDiv.className = 'print-left';
+        if (h2) leftDiv.appendChild(h2.cloneNode(true));
+        leftDiv.appendChild(p.cloneNode(true));
+
+        const rightDiv = document.createElement('div');
+        rightDiv.className = 'print-right';
+        chEntries.forEach(el => rightDiv.appendChild(el.cloneNode(true)));
+
+        spread.appendChild(leftDiv);
+        spread.appendChild(rightDiv);
+        printRoot.appendChild(spread);
+      });
+    });
+
+    document.body.appendChild(printRoot);
   });
+
   window.addEventListener('afterprint', () => {
+    const printRoot = document.getElementById('print-root');
+    if (printRoot) printRoot.remove();
     leftPanel.scrollTop = _printScroll;
-    syncMirrorContent();  // 원래 순서로 복원
+    syncMirrorContent();
   });
 </script>
 

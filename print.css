@@ -10,72 +10,105 @@
 
 html, body {
   width: 220mm;
-  height: 170mm;
   overflow: visible;
   background: #000;
 }
 
-body { display: flex; flex-direction: row; }
+body { display: block; }
 
-#intro          { display: none !important; }
-#chapter-nav    { display: none !important; }
-#cursor-canvas  { display: none !important; }
-#divider-handle { display: none !important; }
-#mirror-inner .cms-expand-btn { display: none !important; }
+/* 원본 레이아웃 숨김 */
+#intro, #left, #divider, #right { display: none !important; }
 
-#left {
-  width: 110mm !important;
+/* 스프레드 컨테이너 */
+#print-root { width: 220mm; }
+
+.print-spread {
+  display: flex;
+  width: 220mm;
   height: 170mm;
   overflow: hidden;
-  flex-shrink: 0;
-  background: #fff;
-  display: flex;
-  flex-direction: row;
+  break-after: page;
+  page-break-after: always;
 }
 
-#left-content {
-  flex: 1;
-  padding: 8mm;
-  overflow: hidden;
+.print-spread:last-child {
+  break-after: avoid;
+  page-break-after: avoid;
 }
 
-.chapter-header {
-  position: static !important;
-  background: #fff !important;
-  padding: 6mm 0 3mm;
-}
-
-
-#divider { display: none !important; }
-
-#right {
+/* 왼쪽: 챕터 텍스트 */
+.print-left {
   width: 110mm;
   height: 170mm;
-  background: #000 !important;
-  position: relative;
-  overflow: hidden;
-}
-
-#mirror-el {
-  position: absolute !important;
-  inset: 0;
-  background: #000 !important;
-  overflow: hidden;
-}
-
-#mirror-inner {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0;
-  right: 0;
+  background: #fff;
   padding: 8mm;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
-#mirror-inner .chapter-header  { display: none !important; }
+.print-left h2 {
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.75rem;
+  font-weight: normal;
+  color: #aaa;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4mm;
+}
 
-#mirror-inner .cms-entry        { visibility: visible !important; }
-#mirror-inner .cms-entry-name   { color: #fff !important; }
-#mirror-inner .cms-entry-type   { color: rgba(0, 255, 65, 0.55) !important; }
-#mirror-inner .cms-entry-body   { color: #00ff41 !important; }
+.print-left p {
+  font-family: 'AffairsTest', serif;
+  font-size: 1.1rem;
+  line-height: 1.85;
+  color: #222;
+  text-align: left;
+  hyphens: none;
+}
 
-.cms-entry-img-wrap { max-height: none !important; }
+/* 오른쪽: 네온 CMS */
+.print-right {
+  width: 110mm;
+  height: 170mm;
+  background: #000;
+  padding: 8mm;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.print-right .cms-entry {
+  display: flex !important;
+  visibility: visible !important;
+}
+
+.print-right .cms-entry-name,
+.print-right .cms-entry-type,
+.print-right .cms-entry-img-wrap,
+.print-right .cms-entry-body {
+  visibility: visible !important;
+}
+
+.print-right .cms-entry-name   { color: #fff !important; text-shadow: none; }
+.print-right .cms-entry-type   { color: rgba(0, 255, 65, 0.45) !important; text-shadow: none; }
+.print-right .cms-entry-body   { color: #00ff41 !important; text-shadow: none; }
+.print-right .cms-expand-btn   { display: none !important; }
+
+.print-right .cms-entry-img-wrap {
+  max-height: none !important;
+  position: relative;
+}
+
+.print-right .cms-entry-img-wrap img {
+  filter: brightness(0.65) saturate(0.15);
+}
+
+.print-right .cms-entry-img-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 255, 65, 0.13);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
