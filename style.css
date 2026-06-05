@@ -119,7 +119,7 @@ body { display: flex; flex-direction: row; }
 .title-sub-left,
 .title-sub-right {
   font-family: 'NeueHaasGrot', sans-serif;
-  font-size: 0.7rem;
+  font-size: 1.3rem;
   line-height: 1.3;
   letter-spacing: 0.03em;
   hyphens: none;
