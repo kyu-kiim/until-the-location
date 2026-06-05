@@ -438,17 +438,17 @@
           entry.appendChild(typeEl);
         }
 
-        // ③ Expand button (rectangular, visible on left as hint)
-        if (row.img) {
-          const btn = document.createElement("button");
-          btn.className = "cms-expand-btn";
-          btn.setAttribute("aria-label", "expand image");
-          btn.addEventListener("click", e => {
-            e.stopPropagation();
-            toggleExpand(key);
-          });
-          entry.appendChild(btn);
+        // ③ Expand button — always visible as click hint
+        const btn = document.createElement("button");
+        btn.className = "cms-expand-btn";
+        btn.setAttribute("aria-label", "expand");
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          toggleExpand(key);
+        });
+        entry.appendChild(btn);
 
+        if (row.img) {
           // ④ Image (expands top → bottom)
           const imgWrap = document.createElement("div");
           imgWrap.className = "cms-entry-img-wrap";
@@ -489,11 +489,10 @@
   window.addEventListener('beforeprint', () => {
     _printScroll = leftPanel.scrollTop;
 
-    // 클릭 순서로 mirror 항목 정렬
+    // 클릭된 항목만, 클릭 순서대로
     const allMirror = Array.from(mirrorInner.querySelectorAll('.cms-entry[data-entry-key]'));
     const clicked   = clickOrder.map(k => allMirror.find(el => el.dataset.entryKey === k)).filter(Boolean);
-    const unclicked = allMirror.filter(el => !clickOrder.includes(el.dataset.entryKey));
-    const ordered   = [...clicked, ...unclicked];
+    const ordered   = clicked;
 
     // 챕터 id별로 CMS 항목 그룹핑 (entryKey: 'ch-0-0' → chId: 'ch-0')
     const cmsByChapter = {};

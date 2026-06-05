@@ -134,7 +134,7 @@ body { display: flex; flex-direction: row; }
 #mirror-inner .title-sub-right { display: block; }
 
 #title-word-left {
-  font-family: 'NeueHaasGrot', sans-serif;
+  font-family: 'HalRepost', sans-serif;
   font-size: clamp(3rem, 8.5vw, 10rem);
   font-weight: normal;
   font-style: normal;
@@ -143,7 +143,7 @@ body { display: flex; flex-direction: row; }
 }
 
 #title-word-right {
-  font-family: 'NeueHaasGrot', sans-serif;
+  font-family: 'HalRepost', sans-serif;
   font-size: clamp(3rem, 8.5vw, 10rem);
   font-weight: normal;
   font-style: italic;
@@ -370,6 +370,13 @@ body { display: flex; flex-direction: row; }
   color: #00ff41;
   text-shadow: none;
   max-width: var(--mirror-text-width);
+}
+
+#mirror-inner .cms-entry.alt .cms-entry-name,
+#mirror-inner .cms-entry.alt .cms-entry-type,
+#mirror-inner .cms-entry.alt .cms-entry-body,
+#mirror-inner .cms-entry.alt .cms-entry-link {
+  text-align: right;
 }
 
 #mirror-inner .cms-expand-btn {
