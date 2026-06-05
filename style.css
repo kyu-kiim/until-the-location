@@ -119,7 +119,7 @@ body { display: flex; flex-direction: row; }
 .title-sub-left,
 .title-sub-right {
   font-family: 'NeueHaasGrot', sans-serif;
-  font-size: 1.3rem;
+  font-size: 0.6rem;
   line-height: 1.3;
   letter-spacing: 0.03em;
   hyphens: none;
@@ -133,7 +133,7 @@ body { display: flex; flex-direction: row; }
 #mirror-inner .title-sub-right { display: block; }
 
 #title-word-left {
-  font-family: 'HalRepost', sans-serif;
+  font-family: 'NeueHaasGrot', sans-serif;
   font-size: clamp(3rem, 8.5vw, 10rem);
   font-weight: normal;
   font-style: normal;
@@ -142,7 +142,7 @@ body { display: flex; flex-direction: row; }
 }
 
 #title-word-right {
-  font-family: 'HalRepost', sans-serif;
+  font-family: 'NeueHaasGrot', sans-serif;
   font-size: clamp(3rem, 8.5vw, 10rem);
   font-weight: normal;
   font-style: italic;
@@ -166,7 +166,7 @@ body { display: flex; flex-direction: row; }
   padding: 60px 0 40px;
 }
 .chapter h2 {
-  font-family: 'HalRepost', sans-serif;
+  font-family: 'NeueHaasGrot', sans-serif;
   font-size: clamp(0.8rem, 1.1vw, 1.1rem);
   font-weight: normal;
   color: #aaa;
