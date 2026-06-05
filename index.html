@@ -90,9 +90,9 @@
       </div>
     </div>
 
-  </div>
-  <div id="print-btn-wrap">
-    <button id="print-btn">PRINT</button>
+    <div id="print-btn-wrap">
+      <button id="print-btn">PRINT</button>
+    </div>
   </div>
 </div>
 
@@ -415,6 +415,7 @@
       if (!role || !name) return;
       (byRole[role] = byRole[role] || []).push(row);
     });
+    let globalIdx = 0;  // 전체 항목 기준 교번 카운터
 
     chapters.forEach(ch => {
       const title   = ch.querySelector("h2")?.textContent.trim().toLowerCase();
@@ -424,9 +425,9 @@
       byRole[roleKey].forEach((row, i) => {
         const key   = `${ch.id}-${i}`;
         const entry = document.createElement("div");
-        // Alternate: even = left-aligned, odd = right-aligned
-        entry.className       = "cms-entry" + (i % 2 === 1 ? " alt" : "");
+        entry.className       = "cms-entry" + (globalIdx % 2 === 1 ? " alt" : "");
         entry.dataset.entryKey = key;
+        globalIdx++;
 
         // ① Name (title)
         const nameEl = document.createElement("div");

@@ -20,13 +20,18 @@ body { display: block; }
 #intro, #left, #divider, #right { display: none !important; }
 
 /* 스프레드 컨테이너 */
-#print-root { width: 220mm; }
+#print-root {
+  width: 220mm;
+  counter-reset: page-num;
+}
 
 .print-spread {
   display: flex;
   width: 220mm;
   height: 170mm;
   overflow: hidden;
+  position: relative;
+  counter-increment: page-num;
   break-after: page;
   page-break-after: always;
 }
@@ -34,6 +39,19 @@ body { display: block; }
 .print-spread:last-child {
   break-after: avoid;
   page-break-after: avoid;
+}
+
+/* 페이지 번호 */
+.print-spread::after {
+  content: counter(page-num);
+  position: absolute;
+  bottom: 6mm;
+  right: 8mm;
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 7pt;
+  letter-spacing: 0.12em;
+  color: rgba(0, 255, 65, 0.55);
+  z-index: 20;
 }
 
 /* 왼쪽: 챕터 텍스트 */
