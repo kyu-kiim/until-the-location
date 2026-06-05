@@ -366,12 +366,20 @@ body { display: flex; flex-direction: row; }
   color: rgba(0, 255, 65, 0.45);
   text-shadow: none;
 }
+#mirror-inner .cms-entry-name { font-family: 'NeueHaasGrot', sans-serif; }
+#mirror-inner .cms-entry-type { font-family: 'NeueHaasGrot', sans-serif; }
+
 #mirror-inner .cms-entry-body {
   color: #00ff41;
   text-shadow: none;
-  max-width: var(--mirror-text-width);
+  font-family: 'NeueHaasGrot', sans-serif;
+  align-self: auto;          /* stretch 해제 → 부모 align-items 따름 */
+  width: var(--mirror-text-width);
 }
 
+#mirror-inner .cms-entry-link { font-family: 'NeueHaasGrot', sans-serif; }
+
+/* alt 항목: 텍스트 오른쪽 정렬 */
 #mirror-inner .cms-entry.alt .cms-entry-name,
 #mirror-inner .cms-entry.alt .cms-entry-type,
 #mirror-inner .cms-entry.alt .cms-entry-body,
