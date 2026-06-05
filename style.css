@@ -21,6 +21,11 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+  --img-width-left:  65%; /* ← 왼쪽 정렬 항목 이미지 크기 */
+  --img-width-right: 65%; /* ← 오른쪽 정렬 항목 이미지 크기 */
+}
+
 html, body {
   width: 100vw; height: 100vh;
   overflow: hidden;
@@ -229,10 +234,14 @@ body { display: flex; flex-direction: row; }
 }
 
 .cms-entry-img-wrap {
-  align-self: stretch;
+  /* align-self 제거 → 부모의 flex-start / flex-end 를 따라감 */
+  width: var(--img-width-left);
   overflow: hidden;
   max-height: 0;
   transition: none;
+}
+.cms-entry.alt .cms-entry-img-wrap {
+  width: var(--img-width-right);
 }
 .cms-entry-img-wrap img {
   width: 100%;
