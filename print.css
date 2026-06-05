@@ -19,6 +19,36 @@ body { display: block; }
 /* 원본 레이아웃 숨김 */
 #intro, #left, #divider, #right { display: none !important; }
 
+/* ── Print-only 페이지 ── */
+.print-only {
+  display: flex;
+  width: 220mm;
+  height: 170mm;
+  overflow: hidden;
+  break-after: page;
+  page-break-after: always;
+}
+
+#print-subtitle .print-right .print-subtitle-text {
+  color: #00ff41;
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+
+#print-subtitle .print-left .print-subtitle-text {
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: #222;
+}
+
+#print-gps-is .print-left p {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin-bottom: 1em;
+}
+
 /* 스프레드 컨테이너 */
 #print-root {
   width: 220mm;

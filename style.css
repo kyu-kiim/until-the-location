@@ -34,6 +34,9 @@ html, body {
 }
 body { display: flex; flex-direction: row; }
 
+/* 화면에서 숨김, 프린트에서만 표시 */
+.print-only { display: none; }
+
 /* ── Left panel ── */
 #left {
   height: 100%;
