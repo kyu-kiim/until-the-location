@@ -458,6 +458,14 @@
           img.loading = "lazy";
           imgWrap.appendChild(img);
           entry.appendChild(imgWrap);
+
+          // ④-b Link annotation below image
+          if (row.link) {
+            const linkEl = document.createElement("div");
+            linkEl.className   = "cms-entry-link";
+            linkEl.textContent = row.link;
+            entry.appendChild(linkEl);
+          }
         }
 
         // ⑤ Body text

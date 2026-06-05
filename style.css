@@ -24,6 +24,7 @@
 :root {
   --img-width-left:  40%; /* ← 왼쪽 정렬 항목 이미지 크기 */
   --img-width-right: 55%; /* ← 오른쪽 정렬 항목 이미지 크기 */
+  --mirror-text-width: 70%; /* ← 오른쪽 패널 글줄 길이 */
 }
 
 html, body {
@@ -247,6 +248,21 @@ body { display: flex; flex-direction: row; }
   max-height: 9999px;
 }
 
+.cms-entry-link {
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.62rem;
+  color: #aaa;
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+#left-content .cms-entry-link { visibility: hidden; }
+
+#mirror-inner .cms-entry-link {
+  color: rgba(0, 255, 65, 0.4);
+}
+
 .cms-entry-body {
   align-self: stretch;
   font-family: 'NeueHaasGrot', sans-serif;
@@ -353,6 +369,7 @@ body { display: flex; flex-direction: row; }
 #mirror-inner .cms-entry-body {
   color: #00ff41;
   text-shadow: none;
+  max-width: var(--mirror-text-width);
 }
 
 #mirror-inner .cms-expand-btn {
