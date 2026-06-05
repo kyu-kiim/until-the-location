@@ -529,6 +529,11 @@
 
           // 이 CMS 항목이 있는 스크롤 위치 기준으로 trail 캡처
           redrawTrailAtScroll(chEntries[i].offsetTop);
+          // 투명 배경 → #000으로 채워야 mix-blend-mode:difference가 print에서 동작
+          tCtx.globalCompositeOperation = 'destination-over';
+          tCtx.fillStyle = '#000';
+          tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+          tCtx.globalCompositeOperation = 'source-over';
           const trailImg = document.createElement('img');
           trailImg.src = trailCanvas.toDataURL();
           trailImg.className = 'print-trail-overlay';
