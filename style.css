@@ -105,8 +105,8 @@ body { display: flex; flex-direction: row; }
 }
 .chapter p {
   font-family: 'AffairsTest', serif;
-  font-size: clamp(1.1rem, 1.8vw, 1.6rem);
-  line-height: 1.85;
+  font-size: clamp(0.8rem, 1.1vw, 1.4rem);
+  line-height: 1.4;
   color: #222;
   max-width: 680px;
   margin: 0 auto 2em;
@@ -218,6 +218,25 @@ body { display: flex; flex-direction: row; }
   width: 9px; height: 9px;
   background: #fff; border: 1.5px solid #00ff41;
   pointer-events: none;
+}
+
+/* ── Print button ── */
+#print-btn-wrap {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 30;
+}
+#print-btn {
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #00ff41;
+  background: none;
+  border: 1px solid #00ff41;
+  padding: 6px 14px;
+  cursor: pointer;
 }
 
 /* ── Right panel ── */

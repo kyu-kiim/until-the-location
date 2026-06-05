@@ -80,6 +80,9 @@
     </div>
 
   </div>
+  <div id="print-btn-wrap">
+    <button id="print-btn">PRINT</button>
+  </div>
 </div>
 
 <!-- ── Divider ── -->
@@ -102,6 +105,7 @@
   const rightPanel  = document.getElementById("right");
   const chapterNav  = document.getElementById("chapter-nav");
   const leftContent = document.getElementById("left-content");
+  let   trailColor  = '#00ff41';
   const mirrorInner = document.getElementById("mirror-inner");
   const chapters    = Array.from(document.querySelectorAll(".chapter"));
 
@@ -261,7 +265,7 @@
   function redrawTrailAtScroll(atScroll) {
     const w = trailCanvas.width, h = trailCanvas.height;
     tCtx.clearRect(0, 0, w, h);
-    tCtx.fillStyle = "#00ff41";
+    tCtx.fillStyle = trailColor;
     const half = (BRUSH - PIXEL) >> 1;
     const toY = yScroll =>
       (yScroll * leftPanel.scrollHeight - atScroll) / leftPanel.clientHeight * h;
@@ -578,6 +582,15 @@
     if (printRoot) printRoot.remove();
     leftPanel.scrollTop = _printScroll;
     syncMirrorContent();
+    trailColor = '#00ff41';
+    redrawTrail();
+  });
+
+  // ── Print button ──────────────────────────────────────
+  document.getElementById('print-btn').addEventListener('click', () => {
+    trailColor = 'red';
+    redrawTrail();
+    window.print();
   });
 </script>
 
