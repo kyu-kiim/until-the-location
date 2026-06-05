@@ -379,10 +379,9 @@ body { display: flex; flex-direction: row; }
 
 #mirror-inner .cms-entry-link { font-family: 'NeueHaasGrot', sans-serif; }
 
-/* alt 항목: 텍스트 오른쪽 정렬 */
+/* alt 항목: 이름·타입·링크는 오른쪽 정렬, 본문은 좌정렬 유지 */
 #mirror-inner .cms-entry.alt .cms-entry-name,
 #mirror-inner .cms-entry.alt .cms-entry-type,
-#mirror-inner .cms-entry.alt .cms-entry-body,
 #mirror-inner .cms-entry.alt .cms-entry-link {
   text-align: right;
 }
