@@ -97,15 +97,14 @@ body { display: flex; flex-direction: row; }
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 20px; /* ← 타이틀과 ticker 사이 간격 */
   margin: 0 -32px;
 }
 
 .title-ticker-row {
   overflow: hidden;
   padding: 14px 32px;
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
 }
 
 @keyframes ticker-scroll {
@@ -125,9 +124,6 @@ body { display: flex; flex-direction: row; }
 #left-content .left-ticker  { display: inline-block; color: #222; }
 #mirror-inner .right-ticker { display: inline-block; color: #00ff41; }
 
-#mirror-inner .title-ticker-row {
-  border-color: rgba(0, 255, 65, 0.25);
-}
 
 .title-main-wrap {
   flex: 1;
@@ -168,7 +164,6 @@ body { display: flex; flex-direction: row; }
   background: #fff;
   z-index: 5;
   padding: 60px 0 40px;
-  text-align: center;
 }
 .chapter h2 {
   font-family: 'NeueHaasGrot', sans-serif;
@@ -185,7 +180,7 @@ body { display: flex; flex-direction: row; }
   line-height: 1.4;
   color: #222;
   max-width: 680px;
-  margin: 0 auto 2em;
+  margin: 0 0 2em;
   text-align: left;
   hyphens: none;
 }
