@@ -9,11 +9,6 @@
 </head>
 <body>
 
-<!-- ── Intro ── -->
-<div id="intro">
-  <div id="intro-left"><div id="intro-left-text">GPS<br>IS...</div></div>
-  <div id="intro-right"></div>
-</div>
 
 <!-- ── Left panel ── -->
 <div id="left">
@@ -480,52 +475,6 @@
 
   loadGoogleSheetCSV().then(injectCMSEntries).catch(e => console.warn("[CSV]", e));
 
-  // ── Intro animation ───────────────────────────────────
-  (async () => {
-    await document.fonts.ready;
-    const sleep = ms => new Promise(r => setTimeout(r, ms));
-    const blink = async (els, times = 3, ms = 150) => {
-      for (let i = 0; i < times; i++) {
-        els.forEach(el => { el.style.opacity = '0'; }); await sleep(ms);
-        els.forEach(el => { el.style.opacity = '1'; }); await sleep(ms);
-      }
-    };
-
-    const intro      = document.getElementById('intro');
-    const introRight = document.getElementById('intro-right');
-    const introText  = document.getElementById('intro-left-text');
-
-    for (const word of ['CALCULATE', 'AVERAGE', 'ERROR', 'DATA']) {
-      const el = document.createElement('div');
-      el.className   = 'intro-word';
-      el.textContent = word;
-      introRight.appendChild(el);
-      await sleep(50);
-      el.style.opacity = '1';
-      await blink([el], 3, 150);
-      await sleep(500);
-    }
-
-    await sleep(1000);
-    introRight.innerHTML = '';
-    for (const word of ['NOT', 'LOCATION']) {
-      const el = document.createElement('div');
-      el.className     = 'intro-word';
-      el.style.opacity = '1';
-      el.textContent   = word;
-      introRight.appendChild(el);
-    }
-
-    await sleep(1200);
-    const allText = [introText, ...introRight.querySelectorAll('.intro-word')];
-    await blink(allText, 3, 150);
-    await sleep(300);
-
-    intro.style.transition = 'opacity 0.6s ease';
-    intro.style.opacity    = '0';
-    await sleep(600);
-    intro.remove();
-  })();
 
   // ── Print: 문단별 스프레드 생성 ──────────────────────
   let _printScroll = 0;
