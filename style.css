@@ -1,4 +1,14 @@
 @font-face {
+  font-family: 'HalRepost';
+  src: url('fonts/HALRepostUnlicensed-Regular.otf') format('opentype');
+  font-weight: normal; font-style: normal;
+}
+@font-face {
+  font-family: 'HalRepost';
+  src: url('fonts/HALRepostUnlicensed-Italic.otf') format('opentype');
+  font-weight: normal; font-style: italic;
+}
+@font-face {
   font-family: 'AffairsTest';
   src: url('fonts/AffairsTest-Regular.otf') format('opentype');
   font-weight: normal; font-style: normal;
@@ -81,6 +91,72 @@ body { display: flex; flex-direction: row; }
   padding: 0 32px;
   min-height: 100%;
 }
+
+/* ── Title section ── */
+#title-section {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 -32px;
+}
+
+.title-ticker-row {
+  overflow: hidden;
+  padding: 14px 32px;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.title-ticker {
+  display: none;
+  white-space: nowrap;
+  animation: ticker-scroll 22s linear infinite;
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+}
+
+#left-content .left-ticker  { display: inline-block; color: #222; }
+#mirror-inner .right-ticker { display: inline-block; color: #00ff41; }
+
+#mirror-inner .title-ticker-row {
+  border-color: rgba(0, 255, 65, 0.25);
+}
+
+.title-main-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+}
+
+#title-word-left {
+  font-family: 'HalRepost', sans-serif;
+  font-size: clamp(3rem, 8.5vw, 10rem);
+  font-weight: normal;
+  font-style: normal;
+  color: #000;
+  line-height: 1.0;
+}
+
+#title-word-right {
+  font-family: 'HalRepost', sans-serif;
+  font-size: clamp(3rem, 8.5vw, 10rem);
+  font-weight: normal;
+  font-style: italic;
+  color: #00ff41;
+  line-height: 1.0;
+  display: none;
+}
+
+#mirror-inner #title-word-left  { display: none !important; }
+#mirror-inner #title-word-right { display: block !important; }
 
 /* ── Chapter ── */
 .chapter { position: relative; }
