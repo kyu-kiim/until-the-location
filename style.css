@@ -99,7 +99,7 @@ body { display: flex; flex-direction: row; }
 
 /* ── Title section ── */
 #title-section {
-  height: 100vh;
+  height: 10vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -128,6 +128,11 @@ body { display: flex; flex-direction: row; }
 
 #left-content .left-ticker  { display: inline-block; color: #222; }
 #mirror-inner .right-ticker { display: inline-block; color: #00ff41; }
+
+/* 아래 ticker row: 위와 같은 텍스트, 절반 오프셋으로 연결된 루프 효과 */
+.title-ticker-row:last-child .title-ticker {
+  animation-delay: -11s; /* ← duration(22s)의 절반 — 조정 가능 */
+}
 
 
 .title-main-wrap {
