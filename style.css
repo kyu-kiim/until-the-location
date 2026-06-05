@@ -106,39 +106,31 @@ body { display: flex; flex-direction: row; }
   margin: 0 -32px;
 }
 
-.title-ticker-row {
-  overflow: hidden;
-  padding: 14px 32px;
-}
-
-@keyframes ticker-scroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-.title-ticker {
-  display: none;
-  white-space: nowrap;
-  animation: ticker-scroll 22s linear infinite;
-  font-family: 'NeueHaasGrot', sans-serif;
-  font-size: 0.7rem;
-  letter-spacing: 0.03em;
-}
-
-#left-content .left-ticker  { display: inline-block; color: #222; }
-#mirror-inner .right-ticker { display: inline-block; color: #00ff41; }
-
-/* 아래 ticker row: 위와 같은 텍스트, 절반 오프셋으로 연결된 루프 효과 */
-.title-ticker-row:last-child .title-ticker {
-  animation-delay: -11s; /* ← duration(22s)의 절반 — 조정 가능 */
-}
-
-
 .title-main-wrap {
   display: flex;
   align-items: center;
   padding: 0 32px;
 }
+
+.title-sub {
+  padding: 0 32px;
+}
+
+.title-sub-left,
+.title-sub-right {
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+  hyphens: none;
+}
+
+.title-sub-left  { color: #555; }
+.title-sub-right { color: #00ff41; display: none; }
+
+#left-content .title-sub-right { display: none; }
+#mirror-inner .title-sub-left  { display: none; }
+#mirror-inner .title-sub-right { display: block; }
 
 #title-word-left {
   font-family: 'HalRepost', sans-serif;
