@@ -536,53 +536,49 @@
       (cmsByChapter[chId] = cmsByChapter[chId] || []).push(el);
     });
 
-    // 문단별 스프레드 생성
+    // 챕터별 스프레드 생성 (모든 문단 한 페이지)
     const printRoot = document.createElement('div');
     printRoot.id = 'print-root';
 
     chapters.forEach(ch => {
-      const h2         = ch.querySelector('h2');
+      const h2        = ch.querySelector('h2');
       const paragraphs = Array.from(ch.querySelectorAll('.chapter-header > p'));
-      const chEntries  = cmsByChapter[ch.id] || [];
-      const count      = Math.max(paragraphs.length, chEntries.length);
+      const chEntries = cmsByChapter[ch.id] || [];
 
-      for (let i = 0; i < count; i++) {
-        const spread = document.createElement('div');
-        spread.className = 'print-spread';
+      const spread = document.createElement('div');
+      spread.className = 'print-spread';
 
-        const leftDiv = document.createElement('div');
-        leftDiv.className = 'print-left';
-        if (paragraphs[i]) {
-          if (h2) leftDiv.appendChild(h2.cloneNode(true));
-          leftDiv.appendChild(paragraphs[i].cloneNode(true));
-        }
-
-        const rightDiv = document.createElement('div');
-        rightDiv.className = 'print-right';
-        if (chEntries[i]) {
-          rightDiv.appendChild(chEntries[i].cloneNode(true));
-
-          // 이 CMS 항목이 있는 스크롤 위치 기준으로 trail 캡처
-          // 캡처는 항상 #00ff41 — difference 블렌드가 올바르게 동작하도록
-          const _savedColor = trailColor;
-          trailColor = '#00ff41';
-          redrawTrailAtScroll(chEntries[i].offsetTop);
-          trailColor = _savedColor;
-          // 투명 배경 → #000으로 채워야 mix-blend-mode:difference가 print에서 동작
-          tCtx.globalCompositeOperation = 'destination-over';
-          tCtx.fillStyle = '#000';
-          tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
-          tCtx.globalCompositeOperation = 'source-over';
-          const trailImg = document.createElement('img');
-          trailImg.src = trailCanvas.toDataURL();
-          trailImg.className = 'print-trail-overlay';
-          rightDiv.appendChild(trailImg);
-        }
-
-        spread.appendChild(leftDiv);
-        spread.appendChild(rightDiv);
-        printRoot.appendChild(spread);
+      const leftDiv = document.createElement('div');
+      leftDiv.className = 'print-left';
+      if (h2) leftDiv.appendChild(h2.cloneNode(true));
+      if (paragraphs.length) {
+        const combined = document.createElement('p');
+        combined.textContent = paragraphs.map(p => p.textContent.trim()).join(' ');
+        leftDiv.appendChild(combined);
       }
+
+      const rightDiv = document.createElement('div');
+      rightDiv.className = 'print-right';
+      if (chEntries[0]) {
+        rightDiv.appendChild(chEntries[0].cloneNode(true));
+
+        const _savedColor = trailColor;
+        trailColor = '#00ff41';
+        redrawTrailAtScroll(chEntries[0].offsetTop);
+        trailColor = _savedColor;
+        tCtx.globalCompositeOperation = 'destination-over';
+        tCtx.fillStyle = '#000';
+        tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+        tCtx.globalCompositeOperation = 'source-over';
+        const trailImg = document.createElement('img');
+        trailImg.src = trailCanvas.toDataURL();
+        trailImg.className = 'print-trail-overlay';
+        rightDiv.appendChild(trailImg);
+      }
+
+      spread.appendChild(leftDiv);
+      spread.appendChild(rightDiv);
+      printRoot.appendChild(spread);
     });
 
     redrawTrail(); // trail canvas 현재 상태로 복원
