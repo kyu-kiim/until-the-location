@@ -142,7 +142,7 @@ body { display: block; }
 }
 
 .print-left p {
-  font-family: 'AffairsTest', sans-serif;
+  font-family: 'AffairsTest', serif;
   font-weight: normal;
   font-style: normal;
   font-size: 1.0rem;

@@ -391,24 +391,26 @@ body { display: flex; flex-direction: row; }
   background: rgba(0, 255, 65, 0.1);
 }
 
-/* 이미지 없는 img-wrap은 expanded 상태에서도 열리지 않게 */
+/* 이미지 없는 img-wrap은 절대 열리지 않음 */
 .cms-entry.expanded .cms-entry-img-wrap:not(:has(img)) {
-  max-height: 0;
+  max-height: 0 !important;
 }
 
-/* 이미지 없는 항목 클릭 시 버튼 solid neon fill */
+/* 이미지 없는 항목 클릭 시 오른쪽 패널 버튼 solid neon fill */
 #mirror-inner .cms-entry.expanded:not(:has(.cms-entry-img-wrap img)) .cms-expand-btn {
   background: #00ff41 !important;
 }
 
 #mirror-inner .cms-entry-img-wrap {
   position: relative;
+  line-height: 0; /* img 아래 inline gap 제거 */
 }
 #mirror-inner .cms-entry-img-wrap img {
   filter: brightness(0.65) saturate(0.15);
   display: block;
 }
-#mirror-inner .cms-entry-img-wrap::after {
+/* img가 실제로 있을 때만 초록 오버레이 적용 */
+#mirror-inner .cms-entry-img-wrap:has(img)::after {
   content: '';
   position: absolute; inset: 0;
   background: rgba(0, 255, 65, 0.13);
