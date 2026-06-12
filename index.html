@@ -11,6 +11,7 @@
 
 <!-- ── Print-only: 1. Title spread ── -->
 <div class="print-only" id="print-subtitle">
+  <div class="print-spread-marks"></div>
   <div class="print-left">
     <h1 class="print-title-word">Until the</h1>
   </div>
@@ -21,6 +22,7 @@
 
 <!-- ── Print-only: 2. Reveal / Hidden spread ── -->
 <div class="print-only" id="print-reveal-hidden">
+  <div class="print-spread-marks"></div>
   <div class="print-left print-img-panel">
     <img src="images/reveal page.png" alt="reveal page">
   </div>
@@ -31,6 +33,7 @@
 
 <!-- ── Print-only: 3. GPS IS spread ── -->
 <div class="print-only" id="print-gps-is">
+  <div class="print-spread-marks"></div>
   <div class="print-left">
     <h2>GPS IS</h2>
     <p>GPS stands for Global Positioning System, which is a system that calculates the current location using satellites. GPS receivers receive signals from several satellites orbiting the Earth and calculate where the user is on Earth. At this time, the location is usually expressed in coordinate values such as latitude, longitude, and altitude.</p>
@@ -570,12 +573,18 @@
       rightDiv.className = 'print-right';
       if (chEntries[0]) {
         rightDiv.appendChild(chEntries[0].cloneNode(true));
-        const trailImg = document.createElement('img');
-        trailImg.src = _entryTrails[chEntries[0].dataset.entryKey] || _capturedTrailUrl;
-        trailImg.className = 'print-trail-overlay';
-        rightDiv.appendChild(trailImg);
+        const trailSrc = _entryTrails[chEntries[0].dataset.entryKey] || _capturedTrailUrl;
+        if (trailSrc) {
+          const trailImg = document.createElement('img');
+          trailImg.src = trailSrc;
+          trailImg.className = 'print-trail-overlay';
+          rightDiv.appendChild(trailImg);
+        }
       }
 
+      const marks = document.createElement('div');
+      marks.className = 'print-spread-marks';
+      spread.appendChild(marks);
       spread.appendChild(leftDiv);
       spread.appendChild(rightDiv);
       printRoot.appendChild(spread);
@@ -592,11 +601,17 @@
         extraRight.className = 'print-right';
         extraRight.appendChild(chEntries[i].cloneNode(true));
 
-        const extraTrail = document.createElement('img');
-        extraTrail.src = _entryTrails[chEntries[i].dataset.entryKey] || _capturedTrailUrl;
-        extraTrail.className = 'print-trail-overlay';
-        extraRight.appendChild(extraTrail);
+        const extraTrailSrc = _entryTrails[chEntries[i].dataset.entryKey] || _capturedTrailUrl;
+        if (extraTrailSrc) {
+          const extraTrail = document.createElement('img');
+          extraTrail.src = extraTrailSrc;
+          extraTrail.className = 'print-trail-overlay';
+          extraRight.appendChild(extraTrail);
+        }
 
+        const extraMarks = document.createElement('div');
+        extraMarks.className = 'print-spread-marks';
+        extraSpread.appendChild(extraMarks);
         extraSpread.appendChild(emptyLeft);
         extraSpread.appendChild(extraRight);
         printRoot.appendChild(extraSpread);
