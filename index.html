@@ -609,7 +609,6 @@
       const h2        = ch.querySelector('h2');
       const paragraphs = Array.from(ch.querySelectorAll('.chapter-header > p'));
       const chEntries = cmsByChapter[ch.id] || [];
-      const chScroll  = ch.offsetTop; // 이 챕터가 뷰포트 상단에 오는 스크롤 위치
 
       const spread = document.createElement('div');
       spread.className = 'print-spread';
@@ -627,7 +626,8 @@
       rightDiv.className = 'print-right';
       if (chEntries[0]) {
         rightDiv.appendChild(chEntries[0].cloneNode(true));
-        rightDiv.appendChild(makeTrailCanvas(chScroll));
+        const leftEntry0 = leftContent.querySelector(`[data-entry-key="${chEntries[0].dataset.entryKey}"]`);
+        rightDiv.appendChild(makeTrailCanvas(leftEntry0 ? leftEntry0.offsetTop : chScroll));
       }
 
       const marks = document.createElement('div');
@@ -649,7 +649,8 @@
         extraRight.className = 'print-right';
         extraRight.appendChild(chEntries[i].cloneNode(true));
 
-        extraRight.appendChild(makeTrailCanvas(chScroll));
+        const leftEntryI = leftContent.querySelector(`[data-entry-key="${chEntries[i].dataset.entryKey}"]`);
+        extraRight.appendChild(makeTrailCanvas(leftEntryI ? leftEntryI.offsetTop : chScroll));
 
         const extraMarks = document.createElement('div');
         extraMarks.className = 'print-spread-marks';
