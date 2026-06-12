@@ -193,19 +193,19 @@ body { display: block; }
 .print-right .cms-entry-img-wrap {
   grid-area: img;
   position: relative;
-  height: 40mm;
-  width: max-content;
-  max-width: 100%;
+  display: inline-block;
+  line-height: 0;
+  overflow: hidden;
   justify-self: start;
   align-self: start;
 }
 
 .print-right .cms-entry-img-wrap img {
   display: block !important;
-  height: 100% !important;
   width: auto !important;
+  height: auto !important;
   max-width: 100% !important;
-  max-height: none !important;
+  max-height: 40mm !important;
   filter: brightness(0.65) saturate(0.15);
 }
 

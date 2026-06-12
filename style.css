@@ -403,7 +403,9 @@ body { display: flex; flex-direction: row; }
 
 #mirror-inner .cms-entry-img-wrap {
   position: relative;
-  line-height: 0; /* img 아래 inline gap 제거 */
+  display: inline-block;
+  line-height: 0;
+  overflow: hidden;
 }
 #mirror-inner .cms-entry-img-wrap img {
   filter: brightness(0.65) saturate(0.15);
