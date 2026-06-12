@@ -166,10 +166,11 @@ body { display: block; }
   filter: brightness(0.65) saturate(0.15);
 }
 
-.print-right .cms-entry-name   { grid-area: name; color: #00ff41 !important; text-shadow: none; align-self: end; font-family: 'NeueHaasGrot', sans-serif !important; font-weight: bold !important; font-style: normal !important; }
-.print-right .cms-entry-type   { grid-area: type; color: #00ff41  !important; text-shadow: none; align-self: end; font-family: 'NeueHaasGrot', sans-serif !important; font-weight: bold !important; font-style: normal !important; }
+.print-right .cms-entry-name   { grid-area: name; color: #fff !important; text-shadow: none; align-self: end; justify-self: start; font-family: 'NeueHaasGrot', sans-serif !important; font-weight: normal !important; font-style: normal !important; font-size: 0.6rem !important; margin: 0 !important; }
+.print-right .cms-entry-type   { grid-area: type; color: rgba(0,255,65,0.55) !important; text-shadow: none; align-self: end; justify-self: end; text-align: right; font-family: 'NeueHaasGrot', sans-serif !important; font-weight: normal !important; font-style: normal !important; font-size: 0.6rem !important; margin: 0 !important; }
 .print-right .cms-entry-body   { grid-area: body; color: #00ff41 !important; text-shadow: none; }
 .print-right .cms-expand-btn   { display: none !important; }
+.print-right .cms-entry-link   { display: none !important; }
 
 .print-right .cms-entry-img-wrap::after { content: none; }
 
