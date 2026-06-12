@@ -333,6 +333,57 @@
 
   function redrawTrail() { redrawTrailAtScroll(leftPanel.scrollTop); }
 
+  // print용 trail canvas 생성 (toDataURL 없이 직접 렌더링)
+  function makeTrailCanvas(atScroll) {
+    const W = 600, H = 940; // print-right 비율에 맞춤 (113:176 ≈ 0.64)
+    const canvas = document.createElement('canvas');
+    canvas.width  = W;
+    canvas.height = H;
+    canvas.className = 'print-trail-overlay';
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#00ff41';
+
+    const sh   = leftPanel.scrollHeight;
+    const ch   = leftPanel.clientHeight;
+    const half = (BRUSH - PIXEL) >> 1;
+
+    function pxLine(x0, y0, x1, y1) {
+      x0 = Math.round(x0 / PIXEL) * PIXEL;
+      y0 = Math.round(y0 / PIXEL) * PIXEL;
+      x1 = Math.round(x1 / PIXEL) * PIXEL;
+      y1 = Math.round(y1 / PIXEL) * PIXEL;
+      const dx = Math.abs(x1 - x0), sx = x0 < x1 ? PIXEL : -PIXEL;
+      const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? PIXEL : -PIXEL;
+      let err = dx + dy;
+      while (true) {
+        ctx.fillRect(x0 - half, y0 - half, BRUSH, BRUSH);
+        if (x0 === x1 && y0 === y1) break;
+        const e2 = 2 * err;
+        if (e2 >= dy) { err += dy; x0 += sx; }
+        if (e2 <= dx) { err += dx; y0 += sy; }
+      }
+    }
+
+    const toY = ys => (ys * sh - atScroll) / ch * H;
+    let prev = null;
+    for (const pt of trailPts) {
+      if (!pt) { prev = null; continue; }
+      const x = pt.x * W;
+      const y = toY(pt.yScroll);
+      if (prev) {
+        pxLine(prev.x * W, toY(prev.yScroll), x, y);
+      } else {
+        ctx.fillRect(
+          Math.round(x / PIXEL) * PIXEL - half,
+          Math.round(y / PIXEL) * PIXEL - half,
+          BRUSH, BRUSH
+        );
+      }
+      prev = pt;
+    }
+    return canvas;
+  }
+
   function resizeTrailCanvas() {
     trailCanvas.width  = rightPanel.clientWidth;
     trailCanvas.height = rightPanel.clientHeight;
@@ -525,21 +576,15 @@
   // ── Print: 문단별 스프레드 생성 ──────────────────────
   let _printScroll = 0;
   window.addEventListener('beforeprint', () => {
-    // 타이틀 및 GPS IS 오른쪽에 trail 주입
-    if (_capturedTrailUrl) {
-      const targets = [
-        document.querySelector('#print-title-right'),
-        document.querySelector('#print-gps-is .print-right'),
-      ];
-      targets.forEach(el => {
-        if (!el) return;
-        el.querySelector('.print-trail-overlay')?.remove();
-        const img = document.createElement('img');
-        img.src = _capturedTrailUrl;
-        img.className = 'print-trail-overlay';
-        el.appendChild(img);
-      });
-    }
+    // 타이틀 및 GPS IS 오른쪽에 trail canvas 주입
+    [
+      document.querySelector('#print-title-right'),
+      document.querySelector('#print-gps-is .print-right'),
+    ].forEach(el => {
+      if (!el) return;
+      el.querySelector('.print-trail-overlay')?.remove();
+      el.appendChild(makeTrailCanvas(_printScroll));
+    });
 
     // 클릭된 항목만, 클릭 순서대로
     const allMirror = Array.from(mirrorInner.querySelectorAll('.cms-entry[data-entry-key]'));
@@ -578,13 +623,7 @@
       rightDiv.className = 'print-right';
       if (chEntries[0]) {
         rightDiv.appendChild(chEntries[0].cloneNode(true));
-        const trailSrc = _entryTrails[chEntries[0].dataset.entryKey] || _capturedTrailUrl;
-        if (trailSrc) {
-          const trailImg = document.createElement('img');
-          trailImg.src = trailSrc;
-          trailImg.className = 'print-trail-overlay';
-          rightDiv.appendChild(trailImg);
-        }
+        rightDiv.appendChild(makeTrailCanvas(_printScroll));
       }
 
       const marks = document.createElement('div');
@@ -606,13 +645,7 @@
         extraRight.className = 'print-right';
         extraRight.appendChild(chEntries[i].cloneNode(true));
 
-        const extraTrailSrc = _entryTrails[chEntries[i].dataset.entryKey] || _capturedTrailUrl;
-        if (extraTrailSrc) {
-          const extraTrail = document.createElement('img');
-          extraTrail.src = extraTrailSrc;
-          extraTrail.className = 'print-trail-overlay';
-          extraRight.appendChild(extraTrail);
-        }
+        extraRight.appendChild(makeTrailCanvas(_printScroll));
 
         const extraMarks = document.createElement('div');
         extraMarks.className = 'print-spread-marks';
@@ -640,27 +673,8 @@
   });
 
   // ── Print button ──────────────────────────────────────
-  let _capturedTrailUrl = null;
-  let _entryTrails = {};
   document.getElementById('print-btn').addEventListener('click', () => {
     _printScroll = leftPanel.scrollTop;
-
-    // 현재 위치 trail 캡처 (타이틀/GPS IS용)
-    const _savedColor = trailColor;
-    trailColor = '#00ff41';
-    redrawTrail();
-    _capturedTrailUrl = trailCanvas.toDataURL();
-
-    // 각 CMS 항목 위치 기준으로 trail 캡처
-    _entryTrails = {};
-    leftContent.querySelectorAll('.cms-entry[data-entry-key]').forEach(el => {
-      redrawTrailAtScroll(el.offsetTop);
-      _entryTrails[el.dataset.entryKey] = trailCanvas.toDataURL();
-    });
-
-    trailColor = _savedColor;
-    redrawTrail();
-
     trailColor = 'red';
     redrawTrail();
     window.print();

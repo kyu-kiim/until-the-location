@@ -198,21 +198,28 @@ body { display: block; }
 
 .print-right .cms-entry-img-wrap {
   grid-area: img;
-  position: relative;
-  width: fit-content;
-  height: fit-content;
+
+  display: inline-grid;
+  grid-template-areas: "image";
+
+  width: max-content;
+  max-width: 100%;
+
   line-height: 0;
   overflow: hidden;
+
   justify-self: start;
   align-self: start;
 }
 
 .print-right .cms-entry-img-wrap img {
+  grid-area: image;
+
   display: block !important;
   width: auto !important;
-  height: auto !important;
+  height: 40mm !important;
   max-width: 100% !important;
-  max-height: 40mm !important;
+
   filter: brightness(0.65) saturate(0.15);
 }
 
@@ -224,11 +231,16 @@ body { display: block; }
 
 .print-right .cms-entry-img-wrap::after {
   content: '';
-  position: absolute;
-  inset: 0;
+
+  grid-area: image;
+
+  width: 100%;
+  height: 100%;
+
   background: rgba(0, 255, 65, 0.13);
   mix-blend-mode: screen;
   pointer-events: none;
+  z-index: 1;
 }
 
 .print-trail-overlay {
@@ -236,7 +248,7 @@ body { display: block; }
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  mix-blend-mode: screen;
   pointer-events: none;
   z-index: 5;
 }
