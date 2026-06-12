@@ -151,7 +151,7 @@ body { display: block; }
 
 .print-right .cms-entry-img-wrap {
   grid-area: img;
-  position: relative;
+  position: absolute;
   width: 100%;
   flex-shrink: 0;
   max-height: none !important;
@@ -160,25 +160,18 @@ body { display: block; }
 .print-right .cms-entry-img-wrap img {
   display: block !important;
   max-width: 100% !important;
-  max-height: 66mm !important;
+  max-height: 40mm !important;
   width: auto !important;
   height: auto !important;
   filter: brightness(0.65) saturate(0.15);
 }
 
-.print-right .cms-entry-name   { grid-area: name; color: #fff !important; text-shadow: none; align-self: end; }
-.print-right .cms-entry-type   { grid-area: type; color: rgba(0, 255, 65, 0.45) !important; text-shadow: none; align-self: end; }
+.print-right .cms-entry-name   { grid-area: name; color: #fff !important; text-shadow: none; align-self: end; font-family: 'NeueHaasGrot', sans-serif !important; font-style: normal !important; }
+.print-right .cms-entry-type   { grid-area: type; color: rgba(0, 255, 65, 0.45) !important; text-shadow: none; align-self: end; font-family: 'NeueHaasGrot', sans-serif !important; font-style: normal !important; }
 .print-right .cms-entry-body   { grid-area: body; color: #00ff41 !important; text-shadow: none; }
 .print-right .cms-expand-btn   { display: none !important; }
 
-.print-right .cms-entry-img-wrap::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 255, 65, 0.13);
-  mix-blend-mode: difference;
-  pointer-events: none;
-}
+.print-right .cms-entry-img-wrap::after { content: none; }
 
 .print-trail-overlay {
   position: absolute;
