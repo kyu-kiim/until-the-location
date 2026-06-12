@@ -1,8 +1,7 @@
 @page {
-  size: 226mm 176mm;
+  size: 238mm 188mm;
   margin: 0mm;
   bleed: 3mm;
-  marks: crop;
 }
 
 * {
@@ -11,17 +10,37 @@
 }
 
 html, body {
-  width: 226mm;
+  width: 238mm;
   overflow: visible;
-  background: #000;
+  background: #fff; /* 마크 영역 배경: 흰색 */
 }
 
 body { display: block; }
+
+/* ── 재단선 / 도련선: 모든 페이지에 고정 오버레이 ── */
+/* 페이지 238×188mm 기준 */
+/* 재단선(trim): 페이지 엣지에서 9mm → 220×170mm */
+/* 도련선(bleed): 페이지 엣지에서 6mm → 226×176mm */
+/* 마크 라인: 0~5mm, 1mm 간격 후 블리드 시작(6mm) */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 238mm;
+  height: 188mm;
+  pointer-events: none;
+  z-index: 99999;
+  mix-blend-mode: difference;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 238 188'%3E%3Cg stroke='white' stroke-width='0.25' fill='none'%3E%3Cline x1='0' y1='9' x2='5' y2='9'/%3E%3Cline x1='9' y1='0' x2='9' y2='5'/%3E%3Cline x1='233' y1='9' x2='238' y2='9'/%3E%3Cline x1='229' y1='0' x2='229' y2='5'/%3E%3Cline x1='0' y1='179' x2='5' y2='179'/%3E%3Cline x1='9' y1='183' x2='9' y2='188'/%3E%3Cline x1='233' y1='179' x2='238' y2='179'/%3E%3Cline x1='229' y1='183' x2='229' y2='188'/%3E%3Cline x1='0' y1='6' x2='5' y2='6'/%3E%3Cline x1='6' y1='0' x2='6' y2='5'/%3E%3Cline x1='233' y1='6' x2='238' y2='6'/%3E%3Cline x1='232' y1='0' x2='232' y2='5'/%3E%3Cline x1='0' y1='182' x2='5' y2='182'/%3E%3Cline x1='6' y1='183' x2='6' y2='188'/%3E%3Cline x1='233' y1='182' x2='238' y2='182'/%3E%3Cline x1='232' y1='183' x2='232' y2='188'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 238mm 188mm;
+  background-repeat: no-repeat;
+}
 
 /* 원본 레이아웃 숨김 */
 #intro, #left, #divider, #right { display: none !important; }
 
 /* ── Print-only 페이지 ── */
+/* margin: 6mm으로 스프레드를 블리드 엣지(페이지에서 6mm) 위치에 배치 */
 .print-only {
   display: flex;
   width: 226mm;
@@ -30,24 +49,7 @@ body { display: block; }
   break-after: page;
   page-break-after: always;
   position: relative;
-}
-
-/* ── 재단선 / 도련선 ── */
-/* 재단선(crop marks): 220×170mm 재단 위치, 각 코너 3mm 선분 */
-/* 도련선(bleed marks): 226×176mm 도련 경계 점선 박스 */
-.print-only::after,
-.print-spread::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 9999;
-  mix-blend-mode: difference;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 226 176'%3E%3Cg stroke='white' stroke-width='0.3' fill='none'%3E%3Cline x1='1' y1='3' x2='5' y2='3'/%3E%3Cline x1='3' y1='1' x2='3' y2='5'/%3E%3Cline x1='221' y1='3' x2='225' y2='3'/%3E%3Cline x1='223' y1='1' x2='223' y2='5'/%3E%3Cline x1='1' y1='173' x2='5' y2='173'/%3E%3Cline x1='3' y1='171' x2='3' y2='175'/%3E%3Cline x1='221' y1='173' x2='225' y2='173'/%3E%3Cline x1='223' y1='171' x2='223' y2='175'/%3E%3Cline x1='0' y1='1.5' x2='3' y2='1.5'/%3E%3Cline x1='1.5' y1='0' x2='1.5' y2='3'/%3E%3Cline x1='222.5' y1='1.5' x2='226' y2='1.5'/%3E%3Cline x1='224.5' y1='0' x2='224.5' y2='3'/%3E%3Cline x1='0' y1='174.5' x2='3' y2='174.5'/%3E%3Cline x1='1.5' y1='172.5' x2='1.5' y2='176'/%3E%3Cline x1='222.5' y1='174.5' x2='226' y2='174.5'/%3E%3Cline x1='224.5' y1='172.5' x2='224.5' y2='176'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+  margin: 6mm 0 0 6mm;
 }
 
 /* ── Reveal / Hidden 이미지 스프레드 ── */
@@ -97,7 +99,7 @@ body { display: block; }
 
 /* 스프레드 컨테이너 */
 #print-root {
-  width: 226mm;
+  width: 238mm;
 }
 
 .print-spread {
@@ -108,6 +110,7 @@ body { display: block; }
   position: relative;
   break-after: page;
   page-break-after: always;
+  margin: 6mm 0 0 6mm;
 }
 
 .print-spread:last-child {
