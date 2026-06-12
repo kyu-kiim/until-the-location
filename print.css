@@ -45,7 +45,7 @@ body { display: block; }
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: difference;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 226 176'%3E%3Cg stroke='white' stroke-width='0.3' fill='none'%3E%3Crect x='0.5' y='0.5' width='225' height='175' stroke-dasharray='2 1.5' opacity='0.6'/%3E%3Cline x1='0' y1='3' x2='2.5' y2='3'/%3E%3Cline x1='3' y1='0' x2='3' y2='2.5'/%3E%3Cline x1='223.5' y1='3' x2='226' y2='3'/%3E%3Cline x1='223' y1='0' x2='223' y2='2.5'/%3E%3Cline x1='0' y1='173' x2='2.5' y2='173'/%3E%3Cline x1='3' y1='173.5' x2='3' y2='176'/%3E%3Cline x1='223.5' y1='173' x2='226' y2='173'/%3E%3Cline x1='223' y1='173.5' x2='223' y2='176'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 226 176'%3E%3Cg stroke='white' stroke-width='0.3' fill='none'%3E%3Cline x1='1' y1='3' x2='5' y2='3'/%3E%3Cline x1='3' y1='1' x2='3' y2='5'/%3E%3Cline x1='221' y1='3' x2='225' y2='3'/%3E%3Cline x1='223' y1='1' x2='223' y2='5'/%3E%3Cline x1='1' y1='173' x2='5' y2='173'/%3E%3Cline x1='3' y1='171' x2='3' y2='175'/%3E%3Cline x1='221' y1='173' x2='225' y2='173'/%3E%3Cline x1='223' y1='171' x2='223' y2='175'/%3E%3Cline x1='0' y1='1.5' x2='3' y2='1.5' opacity='0.6'/%3E%3Cline x1='1.5' y1='0' x2='1.5' y2='3' opacity='0.6'/%3E%3Cline x1='222.5' y1='1.5' x2='226' y2='1.5' opacity='0.6'/%3E%3Cline x1='224.5' y1='0' x2='224.5' y2='3' opacity='0.6'/%3E%3Cline x1='0' y1='174.5' x2='3' y2='174.5' opacity='0.6'/%3E%3Cline x1='1.5' y1='172.5' x2='1.5' y2='176' opacity='0.6'/%3E%3Cline x1='222.5' y1='174.5' x2='226' y2='174.5' opacity='0.6'/%3E%3Cline x1='224.5' y1='172.5' x2='224.5' y2='176' opacity='0.6'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 100% 100%;
   background-repeat: no-repeat;
 }
@@ -64,9 +64,14 @@ body { display: block; }
 }
 
 /* ── 타이틀 스프레드 ── */
-#print-subtitle .print-left,
+#print-subtitle .print-left {
+  padding: 10.5mm 20mm 18mm 13mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
 #print-subtitle .print-right {
-  padding: 12mm 14mm;
+  padding: 10.5mm 13mm 18mm 20mm;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -112,11 +117,12 @@ body { display: block; }
 
 
 /* 왼쪽: 챕터 텍스트 */
+/* padding: top(7.5+3) right(inner 20) bottom(15+3) left(outer 10+3) */
 .print-left {
   width: 113mm;
   height: 176mm;
   background: #fff;
-  padding: 14mm;
+  padding: 10.5mm 20mm 18mm 13mm;
   overflow: hidden;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -153,11 +159,12 @@ body { display: block; }
 }
 
 /* 오른쪽: 네온 CMS */
+/* padding: top(7.5+3) right(outer 10+3) bottom(15+3) left(inner 20) */
 .print-right {
   width: 113mm;
   height: 176mm;
   background: #000;
-  padding: 10mm;
+  padding: 10.5mm 13mm 18mm 20mm;
   overflow: hidden;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -186,7 +193,8 @@ body { display: block; }
 .print-right .cms-entry-img-wrap {
   grid-area: img;
   position: relative;
-  width: 100%;
+  justify-self: start;
+  max-width: 100%;
   flex-shrink: 0;
   max-height: none !important;
 }
