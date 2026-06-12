@@ -242,3 +242,51 @@ body { display: block; }
   pointer-events: none;
   z-index: 5;
 }
+
+/* ── 출처 페이지 ── */
+.print-sources-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5mm 4mm;
+  align-content: start;
+}
+
+.print-source-item {
+  overflow: hidden;
+}
+
+.print-source-name {
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.58rem;
+  font-weight: normal;
+  color: #00ff41;
+  line-height: 1.3;
+  margin-bottom: 0.5mm;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.print-source-type {
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.48rem;
+  color: rgba(0, 255, 65, 0.5);
+  line-height: 1.2;
+  margin-bottom: 0.5mm;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.print-source-link {
+  font-family: 'NeueHaasGrot', sans-serif;
+  font-size: 0.42rem;
+  color: rgba(0, 255, 65, 0.35);
+  line-height: 1.3;
+  word-break: break-all;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

@@ -627,7 +627,7 @@
       if (chEntries[0]) {
         rightDiv.appendChild(chEntries[0].cloneNode(true));
         const leftEntry0 = leftContent.querySelector(`[data-entry-key="${chEntries[0].dataset.entryKey}"]`);
-        rightDiv.appendChild(makeTrailCanvas(leftEntry0 ? leftEntry0.offsetTop : chScroll));
+        rightDiv.appendChild(makeTrailCanvas(leftEntry0 ? leftEntry0.offsetTop : ch.offsetTop));
       }
 
       const marks = document.createElement('div');
@@ -650,7 +650,7 @@
         extraRight.appendChild(chEntries[i].cloneNode(true));
 
         const leftEntryI = leftContent.querySelector(`[data-entry-key="${chEntries[i].dataset.entryKey}"]`);
-        extraRight.appendChild(makeTrailCanvas(leftEntryI ? leftEntryI.offsetTop : chScroll));
+        extraRight.appendChild(makeTrailCanvas(leftEntryI ? leftEntryI.offsetTop : ch.offsetTop));
 
         const extraMarks = document.createElement('div');
         extraMarks.className = 'print-spread-marks';
@@ -660,6 +660,56 @@
         printRoot.appendChild(extraSpread);
       }
     });
+
+    // ── 출처 페이지: 클릭된 CMS 항목의 출처를 2단 그리드로 오른쪽 페이지에 출력 ──
+    const SOURCES_PER_PAGE = 20;
+    const sourceItems = ordered.map(el => ({
+      name: el.querySelector('.cms-entry-name')?.textContent?.trim() || '',
+      type: el.querySelector('.cms-entry-type')?.textContent?.trim() || '',
+      link: el.querySelector('.cms-entry-link')?.textContent?.trim() || '',
+    })).filter(s => s.name || s.link);
+
+    for (let p = 0; p < sourceItems.length; p += SOURCES_PER_PAGE) {
+      const chunk = sourceItems.slice(p, p + SOURCES_PER_PAGE);
+      const srcSpread = document.createElement('div');
+      srcSpread.className = 'print-spread';
+
+      const srcMarks = document.createElement('div');
+      srcMarks.className = 'print-spread-marks';
+
+      const srcLeft = document.createElement('div');
+      srcLeft.className = 'print-left';
+
+      const srcRight = document.createElement('div');
+      srcRight.className = 'print-right';
+
+      const grid = document.createElement('div');
+      grid.className = 'print-sources-grid';
+
+      chunk.forEach(item => {
+        const cell = document.createElement('div');
+        cell.className = 'print-source-item';
+        const nameEl = document.createElement('div');
+        nameEl.className = 'print-source-name';
+        nameEl.textContent = item.name;
+        const typeEl = document.createElement('div');
+        typeEl.className = 'print-source-type';
+        typeEl.textContent = item.type;
+        const linkEl = document.createElement('div');
+        linkEl.className = 'print-source-link';
+        linkEl.textContent = item.link;
+        cell.appendChild(nameEl);
+        if (item.type) cell.appendChild(typeEl);
+        if (item.link) cell.appendChild(linkEl);
+        grid.appendChild(cell);
+      });
+
+      srcRight.appendChild(grid);
+      srcSpread.appendChild(srcMarks);
+      srcSpread.appendChild(srcLeft);
+      srcSpread.appendChild(srcRight);
+      printRoot.appendChild(srcSpread);
+    }
 
     redrawTrail(); // trail canvas 현재 상태로 복원
     document.body.appendChild(printRoot);
