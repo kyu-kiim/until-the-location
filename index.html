@@ -9,13 +9,13 @@
 </head>
 <body>
 
-<!-- ── Print-only: 1. Subtitle spread ── -->
+<!-- ── Print-only: 1. Title spread ── -->
 <div class="print-only" id="print-subtitle">
   <div class="print-left">
-    <p class="print-subtitle-text">Welcome! We show your exact location in real time with the best gps system. Our gps don't care if you're in a city surrounded by tons of iron, remote mountains, underground, or in the middle of a fierce war! Check out your location reflected in real time in all these moments.</p>
+    <h1 class="print-title-word">Until the</h1>
   </div>
-  <div class="print-right">
-    <p class="print-subtitle-text">GPS is the sum of information that consists of a large number of compressed pieces of information, averaged, calculated, consisting of attack and defense. It is not a location, nor is it in real time. Pieces of information, averaged, calculated, consisting of attack and defense. It is not a location, nor is it in real time.</p>
+  <div class="print-right" id="print-title-right">
+    <h1 class="print-title-word">Location</h1>
   </div>
 </div>
 
@@ -509,6 +509,21 @@
   window.addEventListener('beforeprint', () => {
     _printScroll = leftPanel.scrollTop;
 
+    // 타이틀 페이지 우측에 trail 캡처
+    const titleRight = document.getElementById('print-title-right');
+    if (titleRight) {
+      titleRight.querySelector('.print-trail-overlay')?.remove();
+      tCtx.globalCompositeOperation = 'destination-over';
+      tCtx.fillStyle = '#000';
+      tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+      tCtx.globalCompositeOperation = 'source-over';
+      const titleTrailImg = document.createElement('img');
+      titleTrailImg.src = trailCanvas.toDataURL();
+      titleTrailImg.className = 'print-trail-overlay';
+      titleRight.appendChild(titleTrailImg);
+      redrawTrail();
+    }
+
     // 클릭된 항목만, 클릭 순서대로
     const allMirror = Array.from(mirrorInner.querySelectorAll('.cms-entry[data-entry-key]'));
     const clicked   = clickOrder.map(k => allMirror.find(el => el.dataset.entryKey === k)).filter(Boolean);
@@ -577,6 +592,7 @@
   window.addEventListener('afterprint', () => {
     const printRoot = document.getElementById('print-root');
     if (printRoot) printRoot.remove();
+    document.querySelector('#print-title-right .print-trail-overlay')?.remove();
     leftPanel.scrollTop = _printScroll;
     syncMirrorContent();
     trailColor = '#00ff41';
