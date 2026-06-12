@@ -12,7 +12,7 @@
 html, body {
   width: 238mm;
   overflow: visible;
-  background: #fff; /* 마크 영역 배경: 흰색 */
+  background: #000; /* 마크 영역 배경: 검정 */
 }
 
 body { display: block; }
@@ -196,7 +196,8 @@ body::after {
 .print-right .cms-entry-img-wrap {
   grid-area: img;
   position: relative;
-  display: inline-block;
+  width: fit-content;
+  height: fit-content;
   line-height: 0;
   overflow: hidden;
   justify-self: start;
