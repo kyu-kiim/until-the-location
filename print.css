@@ -29,6 +29,28 @@ body { display: block; }
   page-break-after: always;
 }
 
+/* ── 이미지 전면 스프레드 (reveal / hidden) ── */
+#print-reveal,
+#print-hidden {
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.print-spread-img-full {
+  width: 220mm;
+  height: 170mm;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.print-spread-img-full img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* ── 타이틀 스프레드 ── */
 #print-subtitle .print-left,
 #print-subtitle .print-right {
@@ -59,7 +81,6 @@ body { display: block; }
 /* 스프레드 컨테이너 */
 #print-root {
   width: 220mm;
-  counter-reset: page-num;
 }
 
 .print-spread {
@@ -68,7 +89,6 @@ body { display: block; }
   height: 170mm;
   overflow: hidden;
   position: relative;
-  counter-increment: page-num;
   break-after: page;
   page-break-after: always;
 }
