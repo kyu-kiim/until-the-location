@@ -154,14 +154,15 @@ body { display: block; }
   position: relative;
   width: 100%;
   flex-shrink: 0;
+  max-height: none !important;
 }
 
 .print-right .cms-entry-img-wrap img {
-  display: block;
-  max-width: 100%;
-  max-height: 66mm;
-  width: auto;
-  height: auto;
+  display: block !important;
+  max-width: 100% !important;
+  max-height: 66mm !important;
+  width: auto !important;
+  height: auto !important;
   filter: brightness(0.65) saturate(0.15);
 }
 
@@ -175,7 +176,7 @@ body { display: block; }
   position: absolute;
   inset: 0;
   background: rgba(0, 255, 65, 0.13);
-  mix-blend-mode: screen;
+  mix-blend-mode: difference;
   pointer-events: none;
 }
 

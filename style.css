@@ -22,8 +22,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --img-width-left:  40%; /* ← 왼쪽 정렬 항목 이미지 크기 */
-  --img-width-right: 55%; /* ← 오른쪽 정렬 항목 이미지 크기 */
+  --img-width-left:  240px; /* ← 왼쪽 정렬 항목 이미지 크기 (px 고정으로 양쪽 패널 높이 일치) */
+  --img-width-right: 300px; /* ← 오른쪽 정렬 항목 이미지 크기 */
   --mirror-text-width: 70%; /* ← 오른쪽 패널 글줄 길이 */
 }
 
