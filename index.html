@@ -526,7 +526,6 @@
     printRoot.id = 'print-root';
 
     chapters.forEach(ch => {
-      if (ch.id === 'ch-0') return; // GPS IS는 print-only 페이지로 별도 출력
       const h2         = ch.querySelector('h2');
       const paragraphs = Array.from(ch.querySelectorAll('.chapter-header > p'));
       const chEntries  = cmsByChapter[ch.id] || [];

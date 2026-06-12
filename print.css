@@ -71,18 +71,6 @@ body { display: block; }
   page-break-after: avoid;
 }
 
-/* 페이지 번호 */
-.print-spread::after {
-  content: counter(page-num);
-  position: absolute;
-  bottom: 6mm;
-  right: 8mm;
-  font-family: 'NeueHaasGrot', sans-serif;
-  font-size: 9pt;
-  letter-spacing: 0.12em;
-  color: rgba(0, 255, 65, 0.55);
-  z-index: 20;
-}
 
 /* 왼쪽: 챕터 텍스트 */
 .print-left {
@@ -93,16 +81,19 @@ body { display: block; }
   overflow: hidden;
   flex-shrink: 0;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .print-left h2 {
   font-family: 'HalRepost', sans-serif;
   font-size: 0.75rem;
   font-weight: normal;
-  color: #aaa;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 4mm;
+  font-style: italic;
+  color: #555;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  margin-bottom: 0;
 }
 
 .print-left p {
@@ -112,6 +103,12 @@ body { display: block; }
   color: #222;
   text-align: left;
   hyphens: none;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.print-left p:first-of-type {
+  margin-top: auto;
 }
 
 /* 오른쪽: 네온 CMS */
@@ -127,8 +124,15 @@ body { display: block; }
 }
 
 .print-right .cms-entry {
-  display: flex !important;
+  display: grid !important;
   visibility: visible !important;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "img  img"
+    "name type"
+    "body body";
+  gap: 4mm 0;
 }
 
 .print-right .cms-entry-name,
@@ -138,19 +142,23 @@ body { display: block; }
   visibility: visible !important;
 }
 
-.print-right .cms-entry-name   { color: #fff !important; text-shadow: none; }
-.print-right .cms-entry-type   { color: rgba(0, 255, 65, 0.45) !important; text-shadow: none; }
-.print-right .cms-entry-body   { color: #00ff41 !important; text-shadow: none; }
-.print-right .cms-expand-btn   { display: none !important; }
-
 .print-right .cms-entry-img-wrap {
+  grid-area: img;
   max-height: none !important;
   position: relative;
+  width: 100%;
 }
 
 .print-right .cms-entry-img-wrap img {
+  width: 100%;
+  display: block;
   filter: brightness(0.65) saturate(0.15);
 }
+
+.print-right .cms-entry-name   { grid-area: name; color: #fff !important; text-shadow: none; align-self: end; }
+.print-right .cms-entry-type   { grid-area: type; color: rgba(0, 255, 65, 0.45) !important; text-shadow: none; align-self: end; }
+.print-right .cms-entry-body   { grid-area: body; color: #00ff41 !important; text-shadow: none; }
+.print-right .cms-expand-btn   { display: none !important; }
 
 .print-right .cms-entry-img-wrap::after {
   content: '';
