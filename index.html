@@ -507,12 +507,11 @@
   // ── Print: 문단별 스프레드 생성 ──────────────────────
   let _printScroll = 0;
   window.addEventListener('beforeprint', () => {
-    _printScroll = leftPanel.scrollTop;
-
-    // 타이틀 페이지 우측에 trail 캡처
+    // 타이틀 페이지 우측에 trail 캡처 (저장된 위치 기준으로 다시 그린 뒤 캡처)
     const titleRight = document.getElementById('print-title-right');
     if (titleRight) {
       titleRight.querySelector('.print-trail-overlay')?.remove();
+      redrawTrailAtScroll(_printScroll);
       tCtx.globalCompositeOperation = 'destination-over';
       tCtx.fillStyle = '#000';
       tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
@@ -627,6 +626,7 @@
 
   // ── Print button ──────────────────────────────────────
   document.getElementById('print-btn').addEventListener('click', () => {
+    _printScroll = leftPanel.scrollTop;  // beforeprint보다 먼저 저장
     trailColor = 'red';
     redrawTrail();
     window.print();
