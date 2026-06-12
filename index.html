@@ -507,20 +507,20 @@
   // ── Print: 문단별 스프레드 생성 ──────────────────────
   let _printScroll = 0;
   window.addEventListener('beforeprint', () => {
-    // 타이틀 페이지 우측에 trail 캡처 (저장된 위치 기준으로 다시 그린 뒤 캡처)
-    const titleRight = document.getElementById('print-title-right');
-    if (titleRight) {
-      titleRight.querySelector('.print-trail-overlay')?.remove();
-      redrawTrailAtScroll(_printScroll);
-      tCtx.globalCompositeOperation = 'destination-over';
-      tCtx.fillStyle = '#000';
-      tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
-      tCtx.globalCompositeOperation = 'source-over';
-      const titleTrailImg = document.createElement('img');
-      titleTrailImg.src = trailCanvas.toDataURL();
-      titleTrailImg.className = 'print-trail-overlay';
-      titleRight.appendChild(titleTrailImg);
-      redrawTrail();
+    // 클릭 시 캡처된 트레일을 타이틀 및 GPS IS 오른쪽에 주입
+    if (_capturedTrailUrl) {
+      const targets = [
+        document.querySelector('#print-title-right'),
+        document.querySelector('#print-gps-is .print-right'),
+      ];
+      targets.forEach(el => {
+        if (!el) return;
+        el.querySelector('.print-trail-overlay')?.remove();
+        const img = document.createElement('img');
+        img.src = _capturedTrailUrl;
+        img.className = 'print-trail-overlay';
+        el.appendChild(img);
+      });
     }
 
     // 클릭된 항목만, 클릭 순서대로
@@ -617,7 +617,7 @@
   window.addEventListener('afterprint', () => {
     const printRoot = document.getElementById('print-root');
     if (printRoot) printRoot.remove();
-    document.querySelector('#print-title-right .print-trail-overlay')?.remove();
+    document.querySelectorAll('#print-title-right .print-trail-overlay, #print-gps-is .print-trail-overlay').forEach(el => el.remove());
     leftPanel.scrollTop = _printScroll;
     syncMirrorContent();
     trailColor = '#00ff41';
@@ -625,8 +625,16 @@
   });
 
   // ── Print button ──────────────────────────────────────
+  let _capturedTrailUrl = null;
   document.getElementById('print-btn').addEventListener('click', () => {
-    _printScroll = leftPanel.scrollTop;  // beforeprint보다 먼저 저장
+    _printScroll = leftPanel.scrollTop;
+    // #left 숨겨지기 전, 현재 위치의 트레일을 이미지로 즉시 캡처
+    tCtx.globalCompositeOperation = 'destination-over';
+    tCtx.fillStyle = '#000';
+    tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+    tCtx.globalCompositeOperation = 'source-over';
+    _capturedTrailUrl = trailCanvas.toDataURL();
+    redrawTrail(); // 캔버스 원상복구
     trailColor = 'red';
     redrawTrail();
     window.print();
