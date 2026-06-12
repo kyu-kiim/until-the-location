@@ -577,13 +577,16 @@
   let _printScroll = 0;
   window.addEventListener('beforeprint', () => {
     // 타이틀 및 GPS IS 오른쪽에 trail canvas 주입
-    [
-      document.querySelector('#print-title-right'),
-      document.querySelector('#print-gps-is .print-right'),
-    ].forEach(el => {
+    // 타이틀: 현재 스크롤 기준 / GPS IS: ch-0 위치 기준
+    const gpsIsScroll = (document.getElementById('ch-0') || {}).offsetTop || 0;
+    const staticTrails = [
+      { el: document.querySelector('#print-title-right'),      scroll: _printScroll },
+      { el: document.querySelector('#print-gps-is .print-right'), scroll: gpsIsScroll },
+    ];
+    staticTrails.forEach(({ el, scroll }) => {
       if (!el) return;
       el.querySelector('.print-trail-overlay')?.remove();
-      el.appendChild(makeTrailCanvas(_printScroll));
+      el.appendChild(makeTrailCanvas(scroll));
     });
 
     // 클릭된 항목만, 클릭 순서대로
@@ -606,6 +609,7 @@
       const h2        = ch.querySelector('h2');
       const paragraphs = Array.from(ch.querySelectorAll('.chapter-header > p'));
       const chEntries = cmsByChapter[ch.id] || [];
+      const chScroll  = ch.offsetTop; // 이 챕터가 뷰포트 상단에 오는 스크롤 위치
 
       const spread = document.createElement('div');
       spread.className = 'print-spread';
@@ -623,7 +627,7 @@
       rightDiv.className = 'print-right';
       if (chEntries[0]) {
         rightDiv.appendChild(chEntries[0].cloneNode(true));
-        rightDiv.appendChild(makeTrailCanvas(_printScroll));
+        rightDiv.appendChild(makeTrailCanvas(chScroll));
       }
 
       const marks = document.createElement('div');
@@ -645,7 +649,7 @@
         extraRight.className = 'print-right';
         extraRight.appendChild(chEntries[i].cloneNode(true));
 
-        extraRight.appendChild(makeTrailCanvas(_printScroll));
+        extraRight.appendChild(makeTrailCanvas(chScroll));
 
         const extraMarks = document.createElement('div');
         extraMarks.className = 'print-spread-marks';
