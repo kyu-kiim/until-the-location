@@ -29,22 +29,13 @@ body { display: block; }
   page-break-after: always;
 }
 
-/* ── 이미지 전면 스프레드 (reveal / hidden) ── */
-#print-reveal,
-#print-hidden {
-  display: flex;
-  align-items: stretch;
-  justify-content: stretch;
-}
-
-.print-spread-img-full {
-  width: 220mm;
-  height: 170mm;
+/* ── Reveal / Hidden 이미지 스프레드 ── */
+.print-img-panel {
+  padding: 0;
   overflow: hidden;
-  flex-shrink: 0;
 }
 
-.print-spread-img-full img {
+.print-img-panel img {
   display: block;
   width: 100%;
   height: 100%;
