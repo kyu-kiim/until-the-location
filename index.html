@@ -565,10 +565,6 @@
         trailColor = '#00ff41';
         redrawTrailAtScroll(chEntries[0].offsetTop);
         trailColor = _savedColor;
-        tCtx.globalCompositeOperation = 'destination-over';
-        tCtx.fillStyle = '#000';
-        tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
-        tCtx.globalCompositeOperation = 'source-over';
         const trailImg = document.createElement('img');
         trailImg.src = trailCanvas.toDataURL();
         trailImg.className = 'print-trail-overlay';
@@ -595,10 +591,6 @@
         trailColor = '#00ff41';
         redrawTrailAtScroll(chEntries[i].offsetTop);
         trailColor = _sc;
-        tCtx.globalCompositeOperation = 'destination-over';
-        tCtx.fillStyle = '#000';
-        tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
-        tCtx.globalCompositeOperation = 'source-over';
         const extraTrail = document.createElement('img');
         extraTrail.src = trailCanvas.toDataURL();
         extraTrail.className = 'print-trail-overlay';
@@ -630,13 +622,8 @@
   let _capturedTrailUrl = null;
   document.getElementById('print-btn').addEventListener('click', () => {
     _printScroll = leftPanel.scrollTop;
-    // #left 숨겨지기 전, 현재 위치의 트레일을 이미지로 즉시 캡처
-    tCtx.globalCompositeOperation = 'destination-over';
-    tCtx.fillStyle = '#000';
-    tCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
-    tCtx.globalCompositeOperation = 'source-over';
+    // #left 숨겨지기 전, 현재 위치의 트레일을 이미지로 즉시 캡처 (투명 배경)
     _capturedTrailUrl = trailCanvas.toDataURL();
-    redrawTrail(); // 캔버스 원상복구
     trailColor = 'red';
     redrawTrail();
     window.print();
