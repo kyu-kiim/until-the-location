@@ -45,7 +45,7 @@ body { display: block; }
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: difference;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 226 176'%3E%3Cg stroke='white' stroke-width='0.3' fill='none'%3E%3Cline x1='1' y1='3' x2='5' y2='3'/%3E%3Cline x1='3' y1='1' x2='3' y2='5'/%3E%3Cline x1='221' y1='3' x2='225' y2='3'/%3E%3Cline x1='223' y1='1' x2='223' y2='5'/%3E%3Cline x1='1' y1='173' x2='5' y2='173'/%3E%3Cline x1='3' y1='171' x2='3' y2='175'/%3E%3Cline x1='221' y1='173' x2='225' y2='173'/%3E%3Cline x1='223' y1='171' x2='223' y2='175'/%3E%3Cline x1='0' y1='1.5' x2='3' y2='1.5' opacity='0.6'/%3E%3Cline x1='1.5' y1='0' x2='1.5' y2='3' opacity='0.6'/%3E%3Cline x1='222.5' y1='1.5' x2='226' y2='1.5' opacity='0.6'/%3E%3Cline x1='224.5' y1='0' x2='224.5' y2='3' opacity='0.6'/%3E%3Cline x1='0' y1='174.5' x2='3' y2='174.5' opacity='0.6'/%3E%3Cline x1='1.5' y1='172.5' x2='1.5' y2='176' opacity='0.6'/%3E%3Cline x1='222.5' y1='174.5' x2='226' y2='174.5' opacity='0.6'/%3E%3Cline x1='224.5' y1='172.5' x2='224.5' y2='176' opacity='0.6'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 226 176'%3E%3Cg stroke='white' stroke-width='0.3' fill='none'%3E%3Cline x1='1' y1='3' x2='5' y2='3'/%3E%3Cline x1='3' y1='1' x2='3' y2='5'/%3E%3Cline x1='221' y1='3' x2='225' y2='3'/%3E%3Cline x1='223' y1='1' x2='223' y2='5'/%3E%3Cline x1='1' y1='173' x2='5' y2='173'/%3E%3Cline x1='3' y1='171' x2='3' y2='175'/%3E%3Cline x1='221' y1='173' x2='225' y2='173'/%3E%3Cline x1='223' y1='171' x2='223' y2='175'/%3E%3Cline x1='0' y1='1.5' x2='3' y2='1.5'/%3E%3Cline x1='1.5' y1='0' x2='1.5' y2='3'/%3E%3Cline x1='222.5' y1='1.5' x2='226' y2='1.5'/%3E%3Cline x1='224.5' y1='0' x2='224.5' y2='3'/%3E%3Cline x1='0' y1='174.5' x2='3' y2='174.5'/%3E%3Cline x1='1.5' y1='172.5' x2='1.5' y2='176'/%3E%3Cline x1='222.5' y1='174.5' x2='226' y2='174.5'/%3E%3Cline x1='224.5' y1='172.5' x2='224.5' y2='176'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 100% 100%;
   background-repeat: no-repeat;
 }
@@ -194,6 +194,7 @@ body { display: block; }
   grid-area: img;
   position: relative;
   justify-self: start;
+  align-self: start;
   max-width: 100%;
   flex-shrink: 0;
   max-height: none !important;

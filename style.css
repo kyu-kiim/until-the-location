@@ -391,9 +391,14 @@ body { display: flex; flex-direction: row; }
   background: rgba(0, 255, 65, 0.1);
 }
 
-/* 이미지 없는 항목 클릭 시 네온 fill */
-#mirror-inner .cms-entry.expanded:not(:has(.cms-entry-img-wrap)) {
-  background: #00ff41;
+/* 이미지 없는 img-wrap은 expanded 상태에서도 열리지 않게 */
+.cms-entry.expanded .cms-entry-img-wrap:not(:has(img)) {
+  max-height: 0;
+}
+
+/* 이미지 없는 항목 클릭 시 버튼 solid neon fill */
+#mirror-inner .cms-entry.expanded:not(:has(.cms-entry-img-wrap img)) .cms-expand-btn {
+  background: #00ff41 !important;
 }
 
 #mirror-inner .cms-entry-img-wrap {
