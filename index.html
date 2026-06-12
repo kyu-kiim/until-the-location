@@ -560,13 +560,8 @@
       rightDiv.className = 'print-right';
       if (chEntries[0]) {
         rightDiv.appendChild(chEntries[0].cloneNode(true));
-
-        const _savedColor = trailColor;
-        trailColor = '#00ff41';
-        redrawTrailAtScroll(chEntries[0].offsetTop);
-        trailColor = _savedColor;
         const trailImg = document.createElement('img');
-        trailImg.src = trailCanvas.toDataURL();
+        trailImg.src = _entryTrails[chEntries[0].dataset.entryKey] || _capturedTrailUrl;
         trailImg.className = 'print-trail-overlay';
         rightDiv.appendChild(trailImg);
       }
@@ -587,12 +582,8 @@
         extraRight.className = 'print-right';
         extraRight.appendChild(chEntries[i].cloneNode(true));
 
-        const _sc = trailColor;
-        trailColor = '#00ff41';
-        redrawTrailAtScroll(chEntries[i].offsetTop);
-        trailColor = _sc;
         const extraTrail = document.createElement('img');
-        extraTrail.src = trailCanvas.toDataURL();
+        extraTrail.src = _entryTrails[chEntries[i].dataset.entryKey] || _capturedTrailUrl;
         extraTrail.className = 'print-trail-overlay';
         extraRight.appendChild(extraTrail);
 
@@ -620,10 +611,24 @@
 
   // ── Print button ──────────────────────────────────────
   let _capturedTrailUrl = null;
+  let _entryTrails = {};
   document.getElementById('print-btn').addEventListener('click', () => {
     _printScroll = leftPanel.scrollTop;
-    // #left 숨겨지기 전, 현재 위치의 트레일을 이미지로 즉시 캡처 (투명 배경)
+
+    // 현재 위치 trail 캡처 (타이틀/GPS IS용)
     _capturedTrailUrl = trailCanvas.toDataURL();
+
+    // #left가 살아있을 때 각 CMS 항목 위치 기준으로 trail 미리 캡처
+    _entryTrails = {};
+    const _savedColor = trailColor;
+    trailColor = '#00ff41';
+    leftContent.querySelectorAll('.cms-entry[data-entry-key]').forEach(el => {
+      redrawTrailAtScroll(el.offsetTop);
+      _entryTrails[el.dataset.entryKey] = trailCanvas.toDataURL();
+    });
+    trailColor = _savedColor;
+    redrawTrail();
+
     trailColor = 'red';
     redrawTrail();
     window.print();
