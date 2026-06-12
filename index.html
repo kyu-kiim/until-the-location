@@ -204,8 +204,13 @@
   updateScrollIndicator();
 
   // ── Mirror scroll sync ────────────────────────────────
+  // 좌패널(버튼만)과 우패널(이미지+텍스트)의 콘텐츠 높이가 달라서
+  // 절대 px 기반 sync 대신 스크롤 비율 기반으로 맞춤
   function syncMirrorScroll() {
-    mirrorInner.style.top = -leftPanel.scrollTop + "px";
+    const maxLeft   = leftPanel.scrollHeight - leftPanel.clientHeight;
+    const ratio     = maxLeft > 0 ? leftPanel.scrollTop / maxLeft : 0;
+    const maxMirror = Math.max(0, mirrorInner.offsetHeight - rightPanel.clientHeight);
+    mirrorInner.style.top = -(ratio * maxMirror) + 'px';
   }
 
   function syncMirrorContent() {
@@ -520,7 +525,7 @@
   // ── Print: 문단별 스프레드 생성 ──────────────────────
   let _printScroll = 0;
   window.addEventListener('beforeprint', () => {
-    // 클릭 시 캡처된 트레일을 타이틀 및 GPS IS 오른쪽에 주입
+    // 타이틀 및 GPS IS 오른쪽에 trail 주입
     if (_capturedTrailUrl) {
       const targets = [
         document.querySelector('#print-title-right'),
@@ -641,16 +646,18 @@
     _printScroll = leftPanel.scrollTop;
 
     // 현재 위치 trail 캡처 (타이틀/GPS IS용)
-    _capturedTrailUrl = trailCanvas.toDataURL();
-
-    // #left가 살아있을 때 각 CMS 항목 위치 기준으로 trail 미리 캡처
-    _entryTrails = {};
     const _savedColor = trailColor;
     trailColor = '#00ff41';
+    redrawTrail();
+    _capturedTrailUrl = trailCanvas.toDataURL();
+
+    // 각 CMS 항목 위치 기준으로 trail 캡처
+    _entryTrails = {};
     leftContent.querySelectorAll('.cms-entry[data-entry-key]').forEach(el => {
       redrawTrailAtScroll(el.offsetTop);
       _entryTrails[el.dataset.entryKey] = trailCanvas.toDataURL();
     });
+
     trailColor = _savedColor;
     redrawTrail();
 
