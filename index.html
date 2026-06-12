@@ -618,10 +618,12 @@
     const printRoot = document.getElementById('print-root');
     if (printRoot) printRoot.remove();
     document.querySelectorAll('#print-title-right .print-trail-overlay, #print-gps-is .print-trail-overlay').forEach(el => el.remove());
-    leftPanel.scrollTop = _printScroll;
     syncMirrorContent();
     trailColor = '#00ff41';
-    redrawTrail();
+    requestAnimationFrame(() => {
+      leftPanel.scrollTop = _printScroll;
+      redrawTrail();
+    });
   });
 
   // ── Print button ──────────────────────────────────────
