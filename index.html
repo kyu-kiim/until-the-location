@@ -133,7 +133,7 @@
   const leftContent = document.getElementById("left-content");
   let   trailColor  = '#00ff41';
   const mirrorInner = document.getElementById("mirror-inner");
-  const chapters    = Array.from(document.querySelectorAll(".chapter"));
+  const chapters    = Array.from(document.querySelectorAll(".chapter")).filter(ch => ch.id !== 'ch-0');
 
   // ── Chapter nav dots ──────────────────────────────────
   const dots = chapters.map((ch, i) => {
