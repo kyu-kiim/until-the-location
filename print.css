@@ -93,8 +93,8 @@ body { display: block; }
   margin: 0;
 }
 
-#print-subtitle .print-left .print-title-word { color: #000; }
-#print-subtitle .print-right .print-title-word { color: #00ff41; }
+.print-left .print-title-word  { color: #000; }
+.print-right .print-title-word { color: #00ff41; }
 
 #print-gps-is .print-left p {
   font-size: 0.82rem;
