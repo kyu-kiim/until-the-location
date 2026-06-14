@@ -299,7 +299,7 @@ if (window.io) {
   const trailCanvas = document.getElementById("trail-canvas");
   const tCtx        = trailCanvas.getContext("2d");
   const trailPts    = [];          // {x:0-1, yScroll:0-1} | null(펜 올림)
-  const PIXEL = 2, BRUSH = 8;    // 픽셀 그리드 & 브러시 크기
+  const PIXEL = 2, BRUSH = 6;    // 픽셀 그리드 & 브러시 크기
 
 
   function getTrailViewportInfo() {
