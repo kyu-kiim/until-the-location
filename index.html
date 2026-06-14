@@ -731,6 +731,18 @@ function sendTrailStateToServer() {
       srcSpread.appendChild(srcRight);
       printRoot.appendChild(srcSpread);
     }
+
+    const blankLastSpread = document.createElement('div');
+    blankLastSpread.className = 'print-spread';
+    blankLastSpread.appendChild(makeSpreadMarks());
+    const bllLeft = document.createElement('div');
+    bllLeft.className = 'print-left';
+    const bllRight = document.createElement('div');
+    bllRight.className = 'print-right';
+    bllRight.style.background = '#fff';
+    blankLastSpread.appendChild(bllLeft);
+    blankLastSpread.appendChild(bllRight);
+    printRoot.appendChild(blankLastSpread);
   }
 
   function buildPageRoot(printRoot, cmsByChapter, sourceItems, gpsIsScroll) {
@@ -741,6 +753,8 @@ function sendTrailStateToServer() {
       if (contentEl) panel.appendChild(contentEl);
       return panel;
     }
+
+    printRoot.appendChild(makePagePanel(null));
 
     // 1. 타이틀 → 왼쪽 / 오른쪽 각 1페이지
     const subtitleEl = document.getElementById('print-subtitle');
@@ -823,6 +837,8 @@ function sendTrailStateToServer() {
       srcRight.appendChild(grid);
       printRoot.appendChild(makePagePanel(srcRight));
     }
+
+    printRoot.appendChild(makePagePanel(null));
   }
 
   window.addEventListener('beforeprint', () => {
@@ -860,6 +876,18 @@ function sendTrailStateToServer() {
       buildPageRoot(printRoot, cmsByChapter, sourceItems, gpsIsScroll);
     } else {
       buildSpreadRoot(printRoot, cmsByChapter, sourceItems, gpsIsScroll);
+      const blankFirstSpread = document.createElement('div');
+      blankFirstSpread.className = 'print-spread';
+      blankFirstSpread.id = '_print-blank-first';
+      blankFirstSpread.appendChild(makeSpreadMarks());
+      const bflLeft = document.createElement('div');
+      bflLeft.className = 'print-left';
+      const bflRight = document.createElement('div');
+      bflRight.className = 'print-right';
+      bflRight.style.background = '#fff';
+      blankFirstSpread.appendChild(bflLeft);
+      blankFirstSpread.appendChild(bflRight);
+      document.body.insertBefore(blankFirstSpread, document.getElementById('print-subtitle'));
     }
 
     if (printRoot.lastElementChild) {
@@ -875,6 +903,7 @@ function sendTrailStateToServer() {
     document.documentElement.removeAttribute('data-print-mode');
     const printRoot = document.getElementById('print-root');
     if (printRoot) printRoot.remove();
+    document.getElementById('_print-blank-first')?.remove();
     document.querySelectorAll(
       '#print-title-right .print-trail-overlay, #print-gps-is .print-trail-overlay'
     ).forEach(el => el.remove());
