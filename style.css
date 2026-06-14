@@ -318,9 +318,10 @@ body { display: flex; flex-direction: row; }
 #print-btn-wrap {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
   padding: 40px 0 32px;
 }
-#print-btn {
+#print-btn-spread, #print-btn-page {
   font-family: 'NeueHaasGrot', sans-serif;
   font-size: 0.65rem;
   letter-spacing: 0.15em;
