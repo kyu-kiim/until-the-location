@@ -139,7 +139,10 @@
   <canvas id="cursor-canvas"></canvas>
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
+
 <script>
+
   const leftPanel   = document.getElementById("left");
   const divider     = document.getElementById("divider");
   const rightPanel  = document.getElementById("right");
@@ -148,6 +151,21 @@
   let   trailColor  = '#00ff41';
   const mirrorInner = document.getElementById("mirror-inner");
   const chapters    = Array.from(document.querySelectorAll(".chapter")).filter(ch => ch.id !== 'ch-0');
+
+  let socket = null;
+let lastSocketTrailSent = 0;
+
+if (window.io) {
+  socket = io();
+
+  socket.on("connect", () => {
+    console.log("서버 연결됨:", socket.id);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("서버 연결 끊김");
+  });
+}
 
   // ── Chapter nav dots ──────────────────────────────────
   const dots = chapters.map((ch, i) => {
@@ -283,6 +301,42 @@
   const trailPts    = [];          // {x:0-1, yScroll:0-1} | null(펜 올림)
   const PIXEL = 2, BRUSH = 8;    // 픽셀 그리드 & 브러시 크기
 
+  function sendTrailPointToServer(point) {
+    if (!socket || !socket.connected) return;
+  const now = Date.now();
+
+  // 너무 자주 보내지 않도록 제한
+  if (now - lastSocketTrailSent < 50) return;
+  lastSocketTrailSent = now;
+
+  socket.emit("trail:point", {
+    point,
+    scrollTop: leftPanel.scrollTop,
+    scrollHeight: leftPanel.scrollHeight,
+    clientHeight: leftPanel.clientHeight
+  });
+}
+
+function sendTrailEndToServer() {
+  if (!socket || !socket.connected) return;
+
+  socket.emit("trail:end", {
+    scrollTop: leftPanel.scrollTop,
+    scrollHeight: leftPanel.scrollHeight,
+    clientHeight: leftPanel.clientHeight
+  });
+}
+
+function sendTrailStateToServer() {
+  if (!socket || !socket.connected) return;
+
+  socket.emit("trail:state", {
+    scrollTop: leftPanel.scrollTop,
+    scrollHeight: leftPanel.scrollHeight,
+    clientHeight: leftPanel.clientHeight
+  });
+}
+
   // 스크롤-보상 Y: 저장된 scroll-fraction → 현재 캔버스 px
   function trailScrollY(yScroll) {
     return (yScroll * leftPanel.scrollHeight - leftPanel.scrollTop)
@@ -393,6 +447,7 @@
 
   // 스크롤 시 trail 위치 재계산
   leftPanel.addEventListener("scroll", redrawTrail);
+  leftPanel.addEventListener("scroll", sendTrailStateToServer);
 
   // ── Cursor ring ───────────────────────────────────────
   const cursorCanvas = document.getElementById("cursor-canvas");
@@ -427,19 +482,26 @@
     const xFrac   = (e.clientX - lr.left) / lr.width;
     const yScroll = (e.clientY - lr.top + leftPanel.scrollTop) / leftPanel.scrollHeight;
 
-    trailPts.push({ x: xFrac, yScroll });
+    const point = { x: xFrac, yScroll };
+
+    trailPts.push(point);
     if (trailPts.length > 4000) trailPts.splice(0, 500); // 메모리 제한
 
     cursorClient = { x: e.clientX, y: e.clientY };
     redrawTrail();
     drawNeonCursor();
+
+    sendTrailPointToServer(point);
   });
 
   leftPanel.addEventListener("mouseleave", () => {
     trailPts.push(null); // 펜 올림
+
     cursorClient = null;
     redrawTrail();
     drawNeonCursor();
+
+    sendTrailStateToServer();
   });
 
   // ── CSV parser ────────────────────────────────────────
