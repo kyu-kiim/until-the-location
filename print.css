@@ -311,7 +311,7 @@ html[data-print-mode="page"] #print-root {
   display: block;
   width: 113mm;
   height: 176mm;
-  overflow: hidden;
+  overflow: visible;
   break-after: page;
   page-break-after: always;
   position: relative;
