@@ -67,6 +67,11 @@ body { display: block; }
   object-fit: cover;
 }
 
+.print-right.print-img-panel {
+  padding: 0;
+  background: none;
+}
+
 /* ── 타이틀 스프레드 ── */
 #print-subtitle .print-left {
   padding: 10.5mm 20mm 18mm 13mm;
