@@ -348,10 +348,8 @@ function sendTrailStateToServer() {
   });
 }
 
-  // 스크롤-보상 Y: 저장된 scroll-fraction → 현재 캔버스 px
-  function trailScrollY(yScroll) {
-    return (yScroll * leftPanel.scrollHeight - leftPanel.scrollTop)
-           / leftPanel.clientHeight * trailCanvas.height;
+  function trailScrollY(yAbs) {
+    return (yAbs - leftPanel.scrollTop) / leftPanel.clientHeight * trailCanvas.height;
   }
 
   function pixelLine(x0, y0, x1, y1) {
@@ -377,15 +375,14 @@ function sendTrailStateToServer() {
     tCtx.clearRect(0, 0, w, h);
     tCtx.fillStyle = trailColor;
     const half = (BRUSH - PIXEL) >> 1;
-    const toY = yScroll =>
-      (yScroll * leftPanel.scrollHeight - atScroll) / leftPanel.clientHeight * h;
+    const toY = yAbs => (yAbs - atScroll) / leftPanel.clientHeight * h;
     let prev = null;
     for (const pt of trailPts) {
       if (!pt) { prev = null; continue; }
       const x = pt.x * w;
-      const y = toY(pt.yScroll);
+      const y = toY(pt.yAbs);
       if (prev) {
-        pixelLine(prev.x * w, toY(prev.yScroll), x, y);
+        pixelLine(prev.x * w, toY(prev.yAbs), x, y);
       } else {
         tCtx.fillRect(
           Math.round(x / PIXEL) * PIXEL - half,
@@ -412,16 +409,15 @@ function sendTrailStateToServer() {
     ctx.lineCap     = 'square';
     ctx.lineJoin    = 'miter';
 
-    const sh  = leftPanel.scrollHeight;
     const ch  = leftPanel.clientHeight;
-    const toY = ys => (ys * sh - atScroll) / ch * H;
+    const toY = yAbs => (yAbs - atScroll) / ch * H;
 
     let inPath = false;
     ctx.beginPath();
     for (const pt of trailPts) {
       if (!pt) { inPath = false; continue; }
       const x = Math.round(pt.x * W / PIXEL) * PIXEL;
-      const y = Math.round(toY(pt.yScroll) / PIXEL) * PIXEL;
+      const y = Math.round(toY(pt.yAbs) / PIXEL) * PIXEL;
       if (!inPath) { ctx.moveTo(x, y); inPath = true; }
       else         { ctx.lineTo(x, y); }
     }
@@ -468,11 +464,11 @@ function sendTrailStateToServer() {
   resizeCursorCanvas();
 
   leftPanel.addEventListener("mousemove", e => {
-    const lr      = leftPanel.getBoundingClientRect();
-    const xFrac   = (e.clientX - lr.left) / lr.width;
-    const yScroll = (e.clientY - lr.top + leftPanel.scrollTop) / leftPanel.scrollHeight;
+    const lr    = leftPanel.getBoundingClientRect();
+    const xFrac = (e.clientX - lr.left) / lr.width;
+    const yAbs  = e.clientY - lr.top + leftPanel.scrollTop;
 
-    const point = { x: xFrac, yScroll };
+    const point = { x: xFrac, yAbs };
 
     trailPts.push(point);
 
