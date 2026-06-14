@@ -11,7 +11,7 @@
 
 <!-- ── Print-only: 1. Title spread ── -->
 <div class="print-only" id="print-subtitle">
-  <div class="print-spread-marks"></div>
+  <div class="print-spread-marks"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 238 188" overflow="visible"><g stroke="#000" stroke-width="0.3" fill="none"><line x1="0" y1="9" x2="5" y2="9"/><line x1="9" y1="0" x2="9" y2="5"/><line x1="233" y1="9" x2="238" y2="9"/><line x1="229" y1="0" x2="229" y2="5"/><line x1="0" y1="179" x2="5" y2="179"/><line x1="9" y1="183" x2="9" y2="188"/><line x1="233" y1="179" x2="238" y2="179"/><line x1="229" y1="183" x2="229" y2="188"/><line x1="0" y1="6" x2="6" y2="6"/><line x1="6" y1="0" x2="6" y2="6"/><line x1="232" y1="6" x2="238" y2="6"/><line x1="232" y1="0" x2="232" y2="6"/><line x1="0" y1="182" x2="6" y2="182"/><line x1="6" y1="182" x2="6" y2="188"/><line x1="232" y1="182" x2="238" y2="182"/><line x1="232" y1="182" x2="232" y2="188"/></g></svg></div>
   <div class="print-left">
     <h1 class="print-title-word">Until the</h1>
   </div>
@@ -22,7 +22,7 @@
 
 <!-- ── Print-only: 2. Reveal / Hidden spread ── -->
 <div class="print-only" id="print-reveal-hidden">
-  <div class="print-spread-marks"></div>
+  <div class="print-spread-marks"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 238 188" overflow="visible"><g stroke="#000" stroke-width="0.3" fill="none"><line x1="0" y1="9" x2="5" y2="9"/><line x1="9" y1="0" x2="9" y2="5"/><line x1="233" y1="9" x2="238" y2="9"/><line x1="229" y1="0" x2="229" y2="5"/><line x1="0" y1="179" x2="5" y2="179"/><line x1="9" y1="183" x2="9" y2="188"/><line x1="233" y1="179" x2="238" y2="179"/><line x1="229" y1="183" x2="229" y2="188"/><line x1="0" y1="6" x2="6" y2="6"/><line x1="6" y1="0" x2="6" y2="6"/><line x1="232" y1="6" x2="238" y2="6"/><line x1="232" y1="0" x2="232" y2="6"/><line x1="0" y1="182" x2="6" y2="182"/><line x1="6" y1="182" x2="6" y2="188"/><line x1="232" y1="182" x2="238" y2="182"/><line x1="232" y1="182" x2="232" y2="188"/></g></svg></div>
   <div class="print-left print-img-panel">
     <img src="images/reveal page.png" alt="reveal page">
   </div>
@@ -33,7 +33,7 @@
 
 <!-- ── Print-only: 3. GPS IS spread ── -->
 <div class="print-only" id="print-gps-is">
-  <div class="print-spread-marks"></div>
+  <div class="print-spread-marks"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 238 188" overflow="visible"><g stroke="#000" stroke-width="0.3" fill="none"><line x1="0" y1="9" x2="5" y2="9"/><line x1="9" y1="0" x2="9" y2="5"/><line x1="233" y1="9" x2="238" y2="9"/><line x1="229" y1="0" x2="229" y2="5"/><line x1="0" y1="179" x2="5" y2="179"/><line x1="9" y1="183" x2="9" y2="188"/><line x1="233" y1="179" x2="238" y2="179"/><line x1="229" y1="183" x2="229" y2="188"/><line x1="0" y1="6" x2="6" y2="6"/><line x1="6" y1="0" x2="6" y2="6"/><line x1="232" y1="6" x2="238" y2="6"/><line x1="232" y1="0" x2="232" y2="6"/><line x1="0" y1="182" x2="6" y2="182"/><line x1="6" y1="182" x2="6" y2="188"/><line x1="232" y1="182" x2="238" y2="182"/><line x1="232" y1="182" x2="232" y2="188"/></g></svg></div>
   <div class="print-left">
     <h2>GPS IS</h2>
     <p>GPS stands for Global Positioning System, which is a system that calculates the current location using satellites. GPS receivers receive signals from several satellites orbiting the Earth and calculate where the user is on Earth. At this time, the location is usually expressed in coordinate values such as latitude, longitude, and altitude.</p>
@@ -301,6 +301,14 @@ if (window.io) {
   const trailPts    = [];          // {x:0-1, yScroll:0-1} | null(펜 올림)
   const PIXEL = 2, BRUSH = 8;    // 픽셀 그리드 & 브러시 크기
 
+
+  function getTrailViewportInfo() {
+  return {
+    rightWidth: rightPanel.clientWidth,
+    rightHeight: rightPanel.clientHeight
+  };
+}
+
   function sendTrailPointToServer(point) {
     if (!socket || !socket.connected) return;
   const now = Date.now();
@@ -313,7 +321,8 @@ if (window.io) {
     point,
     scrollTop: leftPanel.scrollTop,
     scrollHeight: leftPanel.scrollHeight,
-    clientHeight: leftPanel.clientHeight
+    clientHeight: leftPanel.clientHeight,
+    ...getTrailViewportInfo()
   });
 }
 
@@ -323,7 +332,8 @@ function sendTrailEndToServer() {
   socket.emit("trail:end", {
     scrollTop: leftPanel.scrollTop,
     scrollHeight: leftPanel.scrollHeight,
-    clientHeight: leftPanel.clientHeight
+    clientHeight: leftPanel.clientHeight,
+    ...getTrailViewportInfo()
   });
 }
 
@@ -333,7 +343,8 @@ function sendTrailStateToServer() {
   socket.emit("trail:state", {
     scrollTop: leftPanel.scrollTop,
     scrollHeight: leftPanel.scrollHeight,
-    clientHeight: leftPanel.clientHeight
+    clientHeight: leftPanel.clientHeight,
+    ...getTrailViewportInfo()
   });
 }
 
@@ -636,6 +647,12 @@ function sendTrailStateToServer() {
   loadGoogleSheetCSV().then(injectCMSEntries).catch(e => console.warn("[CSV]", e));
 
 
+  // ── Print marks helpers ───────────────────────────
+  const SPREAD_MARKS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 238 188" overflow="visible"><g stroke="#000" stroke-width="0.3" fill="none"><line x1="0" y1="9" x2="5" y2="9"/><line x1="9" y1="0" x2="9" y2="5"/><line x1="233" y1="9" x2="238" y2="9"/><line x1="229" y1="0" x2="229" y2="5"/><line x1="0" y1="179" x2="5" y2="179"/><line x1="9" y1="183" x2="9" y2="188"/><line x1="233" y1="179" x2="238" y2="179"/><line x1="229" y1="183" x2="229" y2="188"/><line x1="0" y1="6" x2="6" y2="6"/><line x1="6" y1="0" x2="6" y2="6"/><line x1="232" y1="6" x2="238" y2="6"/><line x1="232" y1="0" x2="232" y2="6"/><line x1="0" y1="182" x2="6" y2="182"/><line x1="6" y1="182" x2="6" y2="188"/><line x1="232" y1="182" x2="238" y2="182"/><line x1="232" y1="182" x2="232" y2="188"/></g></svg>`;
+  const PAGE_MARKS_SVG  = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 125 188" overflow="visible"><g stroke="#000" stroke-width="0.3" fill="none"><line x1="0" y1="9" x2="5" y2="9"/><line x1="9" y1="0" x2="9" y2="5"/><line x1="120" y1="9" x2="125" y2="9"/><line x1="116" y1="0" x2="116" y2="5"/><line x1="0" y1="179" x2="5" y2="179"/><line x1="9" y1="183" x2="9" y2="188"/><line x1="120" y1="179" x2="125" y2="179"/><line x1="116" y1="183" x2="116" y2="188"/><line x1="0" y1="6" x2="6" y2="6"/><line x1="6" y1="0" x2="6" y2="6"/><line x1="119" y1="6" x2="125" y2="6"/><line x1="119" y1="0" x2="119" y2="6"/><line x1="0" y1="182" x2="6" y2="182"/><line x1="6" y1="182" x2="6" y2="188"/><line x1="119" y1="182" x2="125" y2="182"/><line x1="119" y1="182" x2="119" y2="188"/></g></svg>`;
+  function makeSpreadMarks() { const el = document.createElement('div'); el.className = 'print-spread-marks'; el.innerHTML = SPREAD_MARKS_SVG; return el; }
+  function makePageMarks()   { const el = document.createElement('div'); el.className = 'print-page-marks';  el.innerHTML = PAGE_MARKS_SVG;  return el; }
+
   // ── Print: 스프레드 / 페이지 모드 구분 내보내기 ────
   let _printScroll = 0;
   let printMode = 'spread';
@@ -700,9 +717,7 @@ function sendTrailStateToServer() {
         rightDiv.appendChild(makeTrailCanvas(leftEntry0 ? leftEntry0.offsetTop : ch.offsetTop));
       }
 
-      const marks = document.createElement('div');
-      marks.className = 'print-spread-marks';
-      spread.appendChild(marks);
+      spread.appendChild(makeSpreadMarks());
       spread.appendChild(leftDiv);
       spread.appendChild(rightDiv);
       printRoot.appendChild(spread);
@@ -717,9 +732,7 @@ function sendTrailStateToServer() {
         extraRight.appendChild(chEntries[i].cloneNode(true));
         const leftEntryI = leftContent.querySelector(`[data-entry-key="${chEntries[i].dataset.entryKey}"]`);
         extraRight.appendChild(makeTrailCanvas(leftEntryI ? leftEntryI.offsetTop : ch.offsetTop));
-        const extraMarks = document.createElement('div');
-        extraMarks.className = 'print-spread-marks';
-        extraSpread.appendChild(extraMarks);
+        extraSpread.appendChild(makeSpreadMarks());
         extraSpread.appendChild(emptyLeft);
         extraSpread.appendChild(extraRight);
         printRoot.appendChild(extraSpread);
@@ -730,8 +743,7 @@ function sendTrailStateToServer() {
       const chunk     = sourceItems.slice(p, p + SOURCES_PER_PAGE);
       const srcSpread = document.createElement('div');
       srcSpread.className = 'print-spread';
-      const srcMarks  = document.createElement('div');
-      srcMarks.className = 'print-spread-marks';
+      const srcMarks  = makeSpreadMarks();
       const srcLeft   = document.createElement('div');
       srcLeft.className = 'print-left';
       const srcRight  = document.createElement('div');
@@ -751,9 +763,7 @@ function sendTrailStateToServer() {
     function makePagePanel(contentEl) {
       const panel = document.createElement('div');
       panel.className = 'print-page-panel';
-      const marks = document.createElement('div');
-      marks.className = 'print-page-marks';
-      panel.appendChild(marks);
+      panel.appendChild(makePageMarks());
       if (contentEl) panel.appendChild(contentEl);
       return panel;
     }
