@@ -299,6 +299,10 @@ body { display: block; }
 
 /* ── 페이지 모드 ── */
 /* .print-only 스프레드를 숨기고 단일 페이지 패널만 출력 */
+@page {
+  size: 122mm 182mm;
+  margin: 0mm;
+}
 html[data-print-mode="page"] .print-only {
   display: none !important;
 }
@@ -306,7 +310,7 @@ html[data-print-mode="page"] .print-only {
 html[data-print-mode="page"],
 html[data-print-mode="page"] body,
 html[data-print-mode="page"] #print-root {
-  width: 125mm;
+  width: 122mm;
 }
 
 /* 단일 페이지 패널: 116mm × 176mm, margin 6mm → 128mm × 188mm 페이지 내 배치 */
