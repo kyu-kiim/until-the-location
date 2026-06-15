@@ -313,16 +313,17 @@ html[data-print-mode="page"] #print-root {
   width: 122mm;
 }
 
-/* 단일 페이지 패널: 116mm × 176mm, margin 6mm → 128mm × 188mm 페이지 내 배치 */
+/* 단일 페이지 패널: 110mm × 170mm, margin 6mm (4방향) → 122mm × 182mm 페이지 내 배치
+   재단선(marks)을 페이지 가장자리에서 6mm 안쪽으로 그리면 → 재단 후 110mm × 170mm */
 .print-page-panel {
   display: block;
-  width: 116mm;
-  height: 176mm;
+  width: 110mm;
+  height: 170mm;
   overflow: visible;
   break-after: page;
   page-break-after: always;
   position: relative;
-  margin: 3mm 0 0 3mm;
+  margin: 6mm;
 }
 
 .print-page-panel:last-child {
@@ -330,11 +331,12 @@ html[data-print-mode="page"] #print-root {
   page-break-after: avoid;
 }
 
-/* 페이지 모드 재단/도련 마크: 125mm × 188mm 기준, 스프레드와 동일한 방식 */
+/* 페이지 모드 재단/도련 마크: 122mm × 182mm 전체 페이지 커버
+   패널 margin: 6mm 이므로 top:-6mm, left:-6mm 으로 페이지 좌상단까지 당김 */
 .print-page-marks {
   position: absolute;
-  top: -3mm;
-  left: -3mm;
+  top: -6mm;
+  left: -6mm;
   width: 122mm;
   height: 182mm;
   pointer-events: none;
