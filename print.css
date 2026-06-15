@@ -331,7 +331,7 @@ html[data-print-mode="page"] #print-root {
   position: absolute;
   top: -6mm;
   left: -6mm;
-  width: 125mm;
+  width: 128mm;
   height: 188mm;
   pointer-events: none;
   z-index: 9999;
