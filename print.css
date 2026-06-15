@@ -1,5 +1,5 @@
 @page {
-  size: 238mm 188mm;
+  size: 116mm 176mm;
   margin: 0mm;
   bleed: 3mm;
 }
@@ -10,7 +10,7 @@
 }
 
 html, body {
-  width: 238mm;
+  width: 116mm;
   overflow: visible;
   background: #fff;
   margin: 0;
@@ -306,14 +306,14 @@ html[data-print-mode="page"] .print-only {
 html[data-print-mode="page"],
 html[data-print-mode="page"] body,
 html[data-print-mode="page"] #print-root {
-  width: 125mm;
+  width: 116mm;
 }
 
-/* 단일 페이지 패널: 113mm × 176mm, margin 6mm → 125mm × 188mm 페이지 내 배치 */
+/* 단일 페이지 패널: 110mm × 170mm, margin 6mm → 116mm × 176mm 페이지 내 배치 */
 .print-page-panel {
   display: block;
-  width: 113mm;
-  height: 176mm;
+  width: 110mm;
+  height: 170mm;
   overflow: visible;
   break-after: page;
   page-break-after: always;
@@ -326,13 +326,13 @@ html[data-print-mode="page"] #print-root {
   page-break-after: avoid;
 }
 
-/* 페이지 모드 재단/도련 마크: 125mm × 188mm 기준, 스프레드와 동일한 방식 */
+/* 페이지 모드 재단/도련 마크: 116mm × 176mm 기준, 스프레드와 동일한 방식 */
 .print-page-marks {
   position: absolute;
   top: -6mm;
   left: -6mm;
-  width: 125mm;
-  height: 188mm;
+  width: 116mm;
+  height: 176mm;
   pointer-events: none;
   z-index: 9999;
   overflow: visible;
